@@ -54,6 +54,9 @@ RUN pip install --no-cache-dir /wheels/*
 # Application Code kopieren
 COPY . .
 
+# Entrypoint Script ausführbar machen
+RUN chmod +x docker-entrypoint.sh
+
 # Static und Media Directories erstellen
 RUN mkdir -p /app/staticfiles /app/media
 
@@ -67,6 +70,9 @@ USER django
 
 # Port freigeben
 EXPOSE 8000
+
+# Entrypoint (führt Migrations/collectstatic beim Start aus)
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 # Daphne (ASGI) als Default Command (HTTP + WebSockets via Django Channels)
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
