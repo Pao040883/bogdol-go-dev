@@ -1,0 +1,26 @@
+# Normalize line endings across Windows dev + Linux servers
+# Keep text files as LF to avoid "modified" on checkout/pull.
+
+* text=auto eol=lf
+
+# Shell scripts must be LF
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Nginx configs
+nginx/** text eol=lf
+*.conf text eol=lf
+
+# Compose / YAML
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Python
+*.py text eol=lf
+
+# Batch files stay CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# PowerShell can be either, keep LF to be safe
+*.ps1 text eol=lf
