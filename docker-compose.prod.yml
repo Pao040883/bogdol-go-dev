@@ -122,7 +122,7 @@ services:
     networks:
       - bogdol_prod_network
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 80 || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1:80/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -151,7 +151,7 @@ services:
     networks:
       - bogdol_prod_network
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 80 || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1:80/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
