@@ -142,7 +142,7 @@ export class UsersEditModalComponent implements OnInit {
     responsibilities: [''],
     expertise_areas: [''],
     phone_number: [''],
-    mobil_number: [''],
+    mobile_number: [''],
     is_active: [true],
     is_staff: [false],
     supervisor: [null as number | null],
@@ -175,7 +175,7 @@ export class UsersEditModalComponent implements OnInit {
       responsibilities: (u as any).responsibilities ?? '',
       expertise_areas: (u as any).expertise_areas ?? '',
       phone_number: u.phone_number ?? '',
-      mobil_number: u.mobil_number ?? '',
+      mobile_number: u.mobile_number ?? '',
       is_active: !!u.is_active,
       is_staff: !!u.is_staff,
       supervisor: supervisorId,
@@ -609,7 +609,15 @@ export class UsersEditModalComponent implements OnInit {
   }
 
   save() {
-    if (!this.user?.id || this.form.invalid) return;
+    if (!this.user?.id) {
+      console.error('No user ID');
+      return;
+    }
+    
+    if (this.form.invalid) {
+      console.error('Form invalid');
+      return;
+    }
 
     const payload: any = {
       ...this.form.value,

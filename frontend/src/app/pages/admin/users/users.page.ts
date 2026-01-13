@@ -144,7 +144,7 @@ export class UsersPage implements OnInit, OnDestroy {
     // Organisation
     companies: [[] as number[]],
     phone_number: [''],
-    mobil_number: [''],
+    mobile_number: [''],
     password: ['', Validators.required], // beim Anlegen Pflicht
     is_active: [true],
     is_staff: [false],
@@ -432,7 +432,7 @@ export class UsersPage implements OnInit, OnDestroy {
         last_name: '',
         companies: [],
         phone_number: '',
-        mobil_number: '',
+        mobile_number: '',
         password: '',
         is_active: true,
         is_staff: false,

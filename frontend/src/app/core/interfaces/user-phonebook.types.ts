@@ -8,7 +8,7 @@ export interface UserPhonebookEntry {
   job_title: string;
   division: string;
   phone_number: string;
-  mobil_number: string;
+  mobile_number: string;
   is_absent: boolean;
   absence_reason: string | null;
   absence_end_date: string | null;

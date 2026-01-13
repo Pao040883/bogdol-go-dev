@@ -220,25 +220,72 @@ def apply_learning_boosts(results: List[Dict], searcher_user=None, query_text: s
                     f"(+{new_boost:.3f}, multiplier: {boost_multiplier:.2f})"
                 )
     
-    # WICHTIG: Füge Profile mit manuellen Mappings hinzu, AUCH wenn sie nicht in results sind!
-    if manual_boosts:
-        existing_profile_ids = {r['profile'].pk for r in results}
+    # CLICK-LEARNING: Finde Profile mit Click-History für diese Query
+    learned_profiles = {}
+    if query_text:
+        from .search_models import SearchClick, SearchQuery
         
+        # Zeitfenster: letzte 90 Tage
+        cutoff_date = timezone.now() - timedelta(days=90)
+        
+        # Finde alle Profile mit Klicks auf exakte Query
+        clicks = SearchClick.objects.filter(
+            search_query__query_text__iexact=query_text,
+            search_query__created_at__gte=cutoff_date
+        ).values('clicked_profile_id').annotate(
+            click_count=Count('id')
+        ).filter(click_count__gte=1)  # Mindestens 1 Klick
+        
+        for click_data in clicks:
+            profile_id = click_data['clicked_profile_id']
+            click_count = click_data['click_count']
+            
+            # Berechne Boost: 0.15 pro Klick (deutlicher als vorher 0.05)
+            click_boost = min(click_count * 0.15, 0.5)  # Max 50% Boost
+            learned_profiles[profile_id] = click_boost
+            
+            logger.info(f"Click-learned profile: ID {profile_id} (+{click_boost:.3f} from {click_count} clicks)")
+    
+    # WICHTIG: Füge Profile mit manuellen Mappings ODER Click-Learning hinzu, auch wenn nicht in results!
+    existing_profile_ids = {r['profile'].pk for r in results}
+    
+    # Manuelle Mappings hinzufügen
+    if manual_boosts:
         for profile_id, boost in manual_boosts.items():
             if profile_id not in existing_profile_ids:
-                # Profil war nicht in Suchergebnissen -> JETZT hinzufügen!
                 from .models import UserProfile
                 try:
                     profile = UserProfile.objects.get(pk=profile_id)
                     results.append({
                         'profile': profile,
-                        'score': boost,  # Score = der manuelle Boost
+                        'score': boost,
                         'original_score': 0.0,
                         'manual_boost': boost,
-                        'matched_fields': [('Manuelle Zuordnung', 'Admin-definiert')],  # Wichtig für Frontend!
+                        'matched_fields': [('Manuelle Zuordnung', 'Admin-definiert')],
                         'added_by_manual_mapping': True
                     })
+                    existing_profile_ids.add(profile_id)
                     logger.info(f"✨ Added by manual mapping: {profile.user.get_full_name()} (score={boost:.3f})")
+                except UserProfile.DoesNotExist:
+                    pass
+    
+    # Click-gelernte Profile hinzufügen
+    if learned_profiles:
+        for profile_id, boost in learned_profiles.items():
+            if profile_id not in existing_profile_ids and boost >= 0.15:  # Mindestens 1 Klick
+                from .models import UserProfile
+                try:
+                    profile = UserProfile.objects.get(pk=profile_id)
+                    results.append({
+                        'profile': profile,
+                        'score': boost,
+                        'original_score': 0.0,
+                        'click_boost': boost,
+                        'matched_fields': [('Click-Learning', f'{int(boost/0.15)} Klick(s)')],
+                        'added_by_click_learning': True
+                    })
+                    existing_profile_ids.add(profile_id)
+                    logger.info(f"✨ Added by click-learning: {profile.user.get_full_name()} (score={boost:.3f})")
                 except UserProfile.DoesNotExist:
                     pass
     

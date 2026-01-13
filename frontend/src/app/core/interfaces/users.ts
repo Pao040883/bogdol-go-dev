@@ -16,7 +16,7 @@ export interface Users {
   // DEPRECATED - use profile instead
   company?: string;
   phone_number?: string;
-  mobil_number?: string;
+  mobile_number?: string;
   is_active: boolean;
   is_staff: boolean;
   is_supervisor: boolean;

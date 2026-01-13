@@ -36,21 +36,8 @@
       [placeholder]="searchMode() === 'semantic' ? 'Was benötigen Sie? (z.B. IT-Problem, Rechnung)' : 'Name oder Abteilung suchen'"
     ></ion-searchbar>
     
-    <!-- Auto-Complete Dropdown -->
-    @if (showAutocomplete && autocompleteOptions.length > 0) {
-      <ion-list class="autocomplete-dropdown">
-        @for (suggestion of autocompleteOptions; track suggestion) {
-          <ion-item button (click)="selectAutocompleteOption(suggestion)">
-            <ion-icon name="search" slot="start" color="medium"></ion-icon>
-            <ion-label>{{ suggestion }}</ion-label>
-            <ion-icon name="arrow-forward" slot="end" color="medium"></ion-icon>
-          </ion-item>
-        }
-      </ion-list>
-    }
-    
     <!-- Related Queries (nach Suche) -->
-    @if (relatedQueries.length > 0 && !showAutocomplete) {
+    @if (relatedQueries.length > 0) {
       <div class="related-queries">
         <ion-text color="medium">
           <small>Ähnliche Suchen:</small>
@@ -68,7 +55,7 @@
   
   <ion-accordion-group [multiple]="true" [value]="expandedAccordion">
     @for (result of results(); track result.id) {
-    <ion-accordion [value]="result.first_name">
+    <ion-accordion [value]="result.id">
       <ion-item slot="header" lines="full" (click)="toggleAccordion(result.id)">
         <ion-icon
           aria-hidden="true"
@@ -105,7 +92,7 @@
         </tr>
         <tr>
           <td>Mobil</td>
-          <td><a href="tel:{{result.mobil_number}}">{{result.mobil_number}}</a></td>
+          <td><a href="tel:{{result.mobile_number}}">{{result.mobile_number}}</a></td>
         </tr>
         <tr>
           <td>E-Mail</td>
@@ -119,15 +106,6 @@
             <ion-button size="small" fill="outline" (click)="startChatWithUser(result)">
               <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
               Nachricht senden
-            </ion-button>
-          </td>
-        </tr>
-        <tr>
-          <td>Profil</td>
-          <td>
-            <ion-button size="small" fill="solid" color="primary" (click)="openUserDetail(result)">
-              <ion-icon name="person-outline" slot="start"></ion-icon>
-              Details anzeigen
             </ion-button>
           </td>
         </tr>

@@ -113,11 +113,11 @@ import { DepartmentMemberDetail, SubstituteAssignment } from '../../../../models
                   </ion-label>
                 </ion-item>
               }
-              @if (user.mobil_number) {
+              @if (user.mobile_number) {
                 <ion-item>
                   <ion-icon name="call" slot="start" color="primary"></ion-icon>
                   <ion-label>
-                    <a [href]="'tel:' + user.mobil_number">{{ user.mobil_number }}</a>
+                    <a [href]="'tel:' + user.mobile_number">{{ user.mobile_number }}</a>
                   </ion-label>
                 </ion-item>
               }

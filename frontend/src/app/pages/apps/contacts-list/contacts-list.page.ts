@@ -118,27 +118,6 @@ export class ContactsListPage implements OnInit, OnDestroy {
     
     this.searchQuery.set(query);
     
-    // Auto-Complete laden (nur bei KI-Suche)
-    if (this.searchMode() === 'semantic' && query.length >= 2 && !this.suppressAutocomplete) {
-      this.userService.getAutocomplete(query)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (suggestions) => {
-            this.autocompleteOptions = suggestions;
-            this.showAutocomplete = suggestions.length > 0;
-          },
-          error: (err) => console.error('Autocomplete failed:', err)
-        });
-    } else {
-      this.showAutocomplete = false;
-      this.autocompleteOptions = [];
-    }
-    
-    // Reset suppress flag nach diesem Input
-    if (this.suppressAutocomplete) {
-      this.suppressAutocomplete = false;
-    }
-    
     if (!query || query.length < 2) {
       // Zurück zur vollständigen Liste
       this.results.set([...this.data()]);
@@ -152,7 +131,14 @@ export class ContactsListPage implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (results) => {
-            this.results.set(results as UserPhonebookEntry[]);
+            // Wenn weniger als 3 Ergebnisse, KI-Ergebnisse zuerst + restliche User darunter
+            if (results.length < 3) {
+              const resultIds = new Set(results.map((r: any) => r.id));
+              const remaining = this.data().filter(d => !resultIds.has(d.id));
+              this.results.set([...results, ...remaining] as UserPhonebookEntry[]);
+            } else {
+              this.results.set(results as UserPhonebookEntry[]);
+            }
             
             // Lade verwandte Queries
             this.userService.getRelatedQueries(query)
@@ -178,8 +164,6 @@ export class ContactsListPage implements OnInit, OnDestroy {
   
   selectAutocompleteOption(suggestion: string) {
     this.searchQuery.set(suggestion);
-    this.showAutocomplete = false;
-    this.suppressAutocomplete = true;
     
     // Trigger search with selected suggestion
     const searchbar = document.querySelector('ion-searchbar') as HTMLIonSearchbarElement;
@@ -440,8 +424,8 @@ export class ContactsListPage implements OnInit, OnDestroy {
     const wasExpanded = this.expandedAccordion === id;
     this.expandedAccordion = wasExpanded ? null : id;
     
-    // Track Klick beim AUFKLAPPEN (nicht beim Zuklappen)
-    if (!wasExpanded && this.searchMode() === 'semantic' && this.searchQuery()) {
+    // Track Klick beim AUFKLAPPEN (nicht beim Zuklappen) - auch für nicht-KI-Ergebnisse
+    if (!wasExpanded && this.searchQuery()) {
       const user = this.results().find(r => r.id === id);
       if (user) {
         this.trackSearchClick(user);
@@ -465,7 +449,8 @@ export class ContactsListPage implements OnInit, OnDestroy {
 
   async openUserDetail(user: UserPhonebookEntry) {
     
-    if (this.searchMode() === 'semantic' && this.searchQuery()) {
+    // Track Klick auch für nicht-KI-Ergebnisse
+    if (this.searchQuery()) {
       this.trackSearchClick(user);
     }
 

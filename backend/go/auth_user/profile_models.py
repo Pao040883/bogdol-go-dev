@@ -628,19 +628,19 @@ class UserProfile(models.Model):
     
     # === Kontaktdaten ===
     phone_validator = RegexValidator(
-        regex=r'^\+?1?\d{9,15}$',
-        message="Format: '+999999999'. Bis zu 15 Ziffern."
+        regex=r'^[\d\s\-\+\(\)\/\.]+$',
+        message="Nur Ziffern, Leerzeichen und die Zeichen + - ( ) / . erlaubt"
     )
     
     phone_number = models.CharField(
         'Telefon',
-        max_length=20,
+        max_length=30,
         blank=True,
         validators=[phone_validator]
     )
     mobile_number = models.CharField(
         'Mobil',
-        max_length=20,
+        max_length=30,
         blank=True,
         validators=[phone_validator]
     )
