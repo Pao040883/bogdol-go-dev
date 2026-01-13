@@ -33,7 +33,10 @@ channels-redis==4.1.0
 daphne==4.0.0
 
 # KI & Embeddings
-numpy>=1.24.0
+numpy>=1.24.0,<2.0.0
+# Use CPU-only PyTorch wheels to avoid pulling CUDA/NVIDIA runtimes into the image.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu ; platform_system == "Linux"
 sentence-transformers>=2.2.0
 rapidfuzz>=3.0.0  # Fuzzy string matching
 
