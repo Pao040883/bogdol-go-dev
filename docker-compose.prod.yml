@@ -44,6 +44,7 @@ services:
     volumes:
       - static_prod_volume:/app/staticfiles
       - media_prod_volume:/app/media
+      - ml_cache_volume:/app/.cache
     depends_on:
       db:
         condition: service_healthy
@@ -165,6 +166,8 @@ volumes:
   static_prod_volume:
     driver: local
   media_prod_volume:
+    driver: local
+  ml_cache_volume:
     driver: local
   celery_beat_prod_data:
     driver: local

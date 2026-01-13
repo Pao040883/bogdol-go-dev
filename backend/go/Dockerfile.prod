@@ -35,6 +35,9 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONFAULTHANDLER=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PIP_NO_CACHE_DIR=1
+ENV TRANSFORMERS_CACHE=/app/.cache/huggingface
+ENV HF_HOME=/app/.cache/huggingface
+ENV TORCH_HOME=/app/.cache/torch
 
 # Runtime-Dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -57,13 +60,14 @@ COPY . .
 # Entrypoint Script ausführbar machen
 RUN chmod +x docker-entrypoint.sh
 
-# Static und Media Directories erstellen
-RUN mkdir -p /app/staticfiles /app/media
+# Static, Media und Cache Directories erstellen
+RUN mkdir -p /app/staticfiles /app/media /app/.cache
 
 # Non-root User erstellen (Security Best Practice)
 RUN groupadd -r django && \
     useradd -r -g django django && \
-    chown -R django:django /app
+    chown -R django:django /app && \
+    chmod -R 775 /app/.cache
 
 # Auf Non-root User wechseln
 USER django
