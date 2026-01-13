@@ -176,8 +176,6 @@ volumes:
     driver: local
   nginx_cache:
     driver: local
-  certbot_www:
-    driver: local
 
 networks:
   bogdol_prod_network:
