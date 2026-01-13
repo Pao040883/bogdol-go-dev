@@ -6,17 +6,13 @@
 # Stage 1: Build Stage
 FROM node:20-alpine AS builder
 
-# Build Arguments
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
-
 WORKDIR /app
 
 # Package files kopieren
 COPY package*.json ./
 
-# Dependencies installieren (nur production dependencies)
-RUN npm ci --only=production --silent && \
+# Dependencies installieren (inkl. devDependencies, da Angular Build diese benötigt)
+RUN npm ci --silent && \
     npm cache clean --force
 
 # Source Code kopieren
