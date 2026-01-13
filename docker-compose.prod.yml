@@ -146,9 +146,7 @@ services:
       - static_prod_volume:/var/www/static:ro
       - media_prod_volume:/var/www/media:ro
       - nginx_cache:/var/cache/nginx
-      - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
-      - certbot_www:/var/www/certbot:ro
     depends_on:
       - backend
       - frontend
