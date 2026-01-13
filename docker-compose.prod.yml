@@ -1,0 +1,173 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: bogdol_go_prod_db
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - bogdol_prod_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache & Message Broker
+  redis:
+    image: redis:7-alpine
+    container_name: bogdol_go_prod_redis
+    restart: unless-stopped
+    volumes:
+      - redis_prod_data:/data
+    networks:
+      - bogdol_prod_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: redis-server --appendonly yes --maxmemory 1gb --maxmemory-policy allkeys-lru
+
+  # Django Backend
+  backend:
+    build:
+      context: ./backend/go
+      dockerfile: Dockerfile.prod
+    container_name: bogdol_go_prod_backend
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - static_prod_volume:/app/staticfiles
+      - media_prod_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bogdol_prod_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Celery Worker
+  celery:
+    build:
+      context: ./backend/go
+      dockerfile: Dockerfile.prod
+    container_name: bogdol_go_prod_celery
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - media_prod_volume:/app/media
+    depends_on:
+      - db
+      - redis
+      - backend
+    networks:
+      - bogdol_prod_network
+    command: celery -A config worker --loglevel=warning --concurrency=2 --max-tasks-per-child=1000
+
+  # Celery Beat
+  celery-beat:
+    build:
+      context: ./backend/go
+      dockerfile: Dockerfile.prod
+    container_name: bogdol_go_prod_celery_beat
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - celery_beat_prod_data:/app/celerybeat-schedule
+    depends_on:
+      - db
+      - redis
+      - backend
+    networks:
+      - bogdol_prod_network
+    command: celery -A config beat --loglevel=warning --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+  # Flower (optional für Production)
+  flower:
+    build:
+      context: ./backend/go
+      dockerfile: Dockerfile.prod
+    container_name: bogdol_go_prod_flower
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      - redis
+      - celery
+    networks:
+      - bogdol_prod_network
+    command: sh -c "celery -A config flower --port=5555 --broker=$$CELERY_BROKER_URL"
+
+  # Angular/Ionic Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: bogdol_go_prod_frontend
+    restart: unless-stopped
+    networks:
+      - bogdol_prod_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: bogdol_go_prod_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d/prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_prod_volume:/var/www/static:ro
+      - media_prod_volume:/var/www/media:ro
+      - nginx_cache:/var/cache/nginx
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - bogdol_prod_network
+
+volumes:
+  postgres_prod_data:
+    driver: local
+  redis_prod_data:
+    driver: local
+  static_prod_volume:
+    driver: local
+  media_prod_volume:
+    driver: local
+  celery_beat_prod_data:
+    driver: local
+  nginx_cache:
+    driver: local
+  certbot_www:
+    driver: local
+
+networks:
+  bogdol_prod_network:
+    driver: bridge

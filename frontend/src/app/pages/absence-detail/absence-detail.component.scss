@@ -1,0 +1,321 @@
+.absence-detail {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+
+  ion-header {
+    ion-toolbar {
+      --background: transparent;
+      --color: white;
+    }
+  }
+
+  ion-content {
+    --background: transparent;
+  }
+
+  // Loading State
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    color: white;
+
+    ion-spinner {
+      margin-bottom: 1rem;
+      --color: white;
+    }
+  }
+
+  // Cards General Styling
+  ion-card {
+    margin: 1rem 0;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    ion-card-header {
+      ion-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+
+        ion-icon {
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+
+  // Main Info Card
+  .main-info-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+
+    ion-card-header {
+      ion-card-title,
+      ion-card-subtitle {
+        color: white;
+      }
+    }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      ion-icon {
+        font-size: 1.5rem;
+        margin-top: 0.125rem;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .info-label {
+        font-size: 0.875rem;
+        opacity: 0.8;
+        margin-bottom: 0.25rem;
+      }
+
+      .info-value {
+        font-weight: 500;
+        
+        .workdays {
+          font-size: 0.875rem;
+          opacity: 0.8;
+        }
+
+        ion-chip {
+          margin-left: 0.5rem;
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+
+  // Workflow Card
+  .workflow-card {
+    .workflow-step {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: var(--ion-color-light);
+      border-radius: 12px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .step-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+
+        &.approved {
+          background: var(--ion-color-success);
+        }
+
+        &.hr-processed {
+          background: var(--ion-color-tertiary);
+        }
+
+        &.rejected {
+          background: var(--ion-color-danger);
+        }
+
+        ion-icon {
+          font-size: 1.5rem;
+        }
+      }
+
+      .step-content {
+        flex: 1;
+
+        .step-title {
+          font-weight: 600;
+          color: var(--ion-color-dark);
+          margin-bottom: 0.25rem;
+        }
+
+        .step-info {
+          color: var(--ion-color-medium);
+          font-size: 0.875rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .step-comment {
+          font-style: italic;
+          color: var(--ion-color-medium-shade);
+          background: rgba(0, 0, 0, 0.05);
+          padding: 0.5rem;
+          border-radius: 6px;
+          border-left: 3px solid var(--ion-color-primary);
+        }
+      }
+    }
+  }
+
+  // Actions Card
+  .actions-card {
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .supervisor-actions,
+      .hr-actions,
+      .owner-actions,
+      .cancel-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        ion-button {
+          --border-radius: 12px;
+          height: 48px;
+          font-weight: 600;
+
+          ion-icon {
+            font-size: 1.2rem;
+          }
+        }
+      }
+
+      .supervisor-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+
+        ion-button {
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  // Conflicts Card
+  .conflicts-card {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+
+    ion-card-header ion-card-title {
+      color: var(--ion-color-danger);
+    }
+
+    .conflict-item {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      ion-chip {
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        margin: 0;
+        color: var(--ion-color-dark);
+      }
+    }
+  }
+
+  // Timestamps Card
+  .timestamps-card {
+    ion-card-content {
+      .timestamp-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--ion-color-light);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        span:first-child {
+          color: var(--ion-color-medium);
+          font-weight: 500;
+        }
+
+        span:last-child {
+          color: var(--ion-color-dark);
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (min-width: 768px) {
+  .absence-detail {
+    ion-content {
+      --padding-start: 2rem;
+      --padding-end: 2rem;
+    }
+
+    .actions-card {
+      .action-buttons {
+        .supervisor-actions,
+        .hr-actions,
+        .owner-actions,
+        .cancel-actions {
+          flex-direction: row;
+          justify-content: center;
+          max-width: 600px;
+          margin: 0 auto;
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .absence-detail {
+    .absence-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .absence-detail {
+    ion-card {
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .workflow-card {
+      .workflow-step {
+        background: var(--ion-color-dark-tint);
+
+        .step-comment {
+          background: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+  }
+}

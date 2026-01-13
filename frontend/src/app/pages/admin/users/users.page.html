@@ -1,0 +1,449 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Benutzer</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <app-tab-layout [tabs]="tabConfig">
+    <ng-container tab-content-active>
+      <ion-list>
+        <ion-list-header>
+          <ion-label>
+            <h2>Aktive Benutzer</h2>
+            <p>Inaktive Benutzer findest du unter dem Tab Archiv</p>
+          </ion-label>
+        </ion-list-header>
+        
+        @if (usersWithoutSupervisor().length > 0) {
+          <ion-item color="warning" lines="full">
+            <ion-icon name="warning-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>{{ usersWithoutSupervisor().length }} Benutzer ohne Vorgesetzten</h3>
+              <p>Diese Benutzer sollten einem Vorgesetzten zugewiesen werden</p>
+            </ion-label>
+          </ion-item>
+        }
+        
+        <ion-searchbar placeholder="Benutzer suchen"></ion-searchbar>
+        @if (userService.isLoading()) {
+          <p>Lade Benutzer...</p>
+        } @else { 
+          @for (user of activeUsers(); track user.id) {
+            <ion-item lines="full">
+              <ion-label>
+                <h3>
+                  @if (isUserOnline(user.username)) {
+                    <ion-icon name="ellipse-outline" color="success" style="font-size: 12px; margin-right: 4px;"></ion-icon>
+                  }
+                  {{ user.username }}
+                  @if (!user.supervisor) {
+                    <ion-badge color="warning" style="margin-left: 8px;">Kein Vorgesetzter</ion-badge>
+                  }
+                </h3>
+                <p>{{ user.email }}</p>
+                <p>{{ user.first_name }} {{ user.last_name }}</p>
+              </ion-label>
+              <ion-button slot="end" fill="clear" (click)="openEditUser(user)">
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-button>
+              <ion-button slot="end" fill="clear" (click)="openPermissionMatrix(user.id)">
+                <ion-icon slot="icon-only" name="shield-checkmark-outline"></ion-icon>
+              </ion-button>
+              <ion-button slot="end" fill="clear" color="danger" (click)="deactivateUser(user)">
+                <ion-icon slot="icon-only" name="ban-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          } 
+        } 
+        @if (userService.error()) {
+          <p style="color: red">{{ userService.error() }}</p>
+        }
+      </ion-list>
+    </ng-container>
+
+    <ng-container tab-content-new>
+      <form [formGroup]="createForm" (ngSubmit)="onCreateUser()">
+        <ion-list>
+          <ion-list-header>
+            <ion-label>
+              <h2>Benutzer anlegen</h2>
+              <p>Neuen Benutzer mit Abteilungszuordnungen erstellen</p>
+            </ion-label>
+          </ion-list-header>
+
+          <ion-item>
+            <ion-label position="stacked">Username *</ion-label>
+            <ion-input formControlName="username" autocomplete="off"></ion-input>
+          </ion-item>
+          @if (createForm.get('username')?.touched && createForm.get('username')?.invalid) {
+            <ion-item lines="none">
+              <ion-label color="danger">Username ist erforderlich.</ion-label>
+            </ion-item>
+          }
+
+          <ion-item>
+            <ion-label position="stacked">E-Mail *</ion-label>
+            <ion-input type="email" formControlName="email" autocomplete="off"></ion-input>
+          </ion-item>
+          @if (createForm.get('email')?.touched && createForm.get('email')?.invalid) {
+            <ion-item lines="none">
+              <ion-label color="danger">Gültige E-Mail erforderlich.</ion-label>
+            </ion-item>
+          }
+
+          <ion-item>
+            <ion-label position="stacked">Vorname</ion-label>
+            <ion-input formControlName="first_name"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Nachname</ion-label>
+            <ion-input formControlName="last_name"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Telefon</ion-label>
+            <ion-input formControlName="phone_number" type="tel"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Mobil</ion-label>
+            <ion-input formControlName="mobil_number" type="tel"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Passwort *</ion-label>
+            <ion-input formControlName="password" type="password" autocomplete="new-password"></ion-input>
+          </ion-item>
+          @if (createForm.get('password')?.touched && createForm.get('password')?.invalid) {
+            <ion-item lines="none">
+              <ion-label color="danger">Passwort ist erforderlich.</ion-label>
+            </ion-item>
+          }
+
+          <ion-item>
+            <ion-label>Aktiv</ion-label>
+            <ion-toggle formControlName="is_active"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>Administrator</ion-label>
+            <ion-toggle formControlName="is_staff"></ion-toggle>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Vorgesetzter (optional)</ion-label>
+            <ion-select formControlName="supervisor" interface="popover" placeholder="Keine Auswahl">
+              <ion-select-option [value]="null">– Kein Vorgesetzter –</ion-select-option>
+              @for (u of userService.activeUsers(); track u.id) {
+                <ion-select-option [value]="u.id">
+                  {{ u.first_name || u.last_name ? (u.first_name + ' ' + u.last_name) : u.username }}
+                </ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <!-- Organisation Section -->
+          <ion-item lines="none" class="section-header">
+            <ion-label>
+              <h2>Organisation</h2>
+            </ion-label>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label position="stacked">Gesellschaften</ion-label>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0;">
+              @for (company of companies; track company.id) {
+                <ion-chip 
+                  [color]="(createForm.value.companies || []).includes(company.id) ? 'primary' : 'medium'"
+                  (click)="toggleCompany(company.id)"
+                  style="cursor: pointer;">
+                  <ion-label>{{ company.code }}</ion-label>
+                  @if ((createForm.value.companies || []).includes(company.id)) {
+                    <ion-icon name="close"></ion-icon>
+                  }
+                </ion-chip>
+              }
+            </div>
+          </ion-item>
+
+          <div style="margin-top: 16px; padding: 0 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <strong>Abteilungszuordnungen</strong>
+              <ion-button fill="outline" size="small" (click)="startAddMembershipForNewUser()">
+                <ion-icon slot="start" name="add"></ion-icon>
+                Hinzufügen
+              </ion-button>
+            </div>
+
+            <!-- Pro Gesellschaft gruppiert -->
+            @for (company of companies; track company.id) {
+              @if ((createForm.value.companies || []).includes(company.id)) {
+                <div style="margin-bottom: 16px;">
+                  <h4 style="margin: 8px 0;">{{ company.name }} ({{ company.code }})</h4>
+                  
+                  @for (membership of getMembershipsForCompany(company.id); track $index) {
+                    <ion-card>
+                      <ion-card-header>
+                        <ion-card-title>
+                          {{ getDepartmentName(membership.department) }}
+                          @if (membership.is_primary) {
+                            <ion-badge color="primary">
+                              <ion-icon name="star"></ion-icon>
+                              Primär
+                            </ion-badge>
+                          }
+                        </ion-card-title>
+                      </ion-card-header>
+                      <ion-card-content>
+                        <p><strong>Rolle:</strong> {{ getRoleName(membership.role) }}</p>
+                        @if (membership.position_title) {
+                          <p><strong>Position:</strong> {{ membership.position_title }}</p>
+                        }
+                        @if (membership.is_staff_position) {
+                          <p><strong>Stabsstelle:</strong> ✅ Ja</p>
+                        }
+                        <p><strong>Aktiv:</strong> {{ membership.is_active ? 'Ja' : 'Nein' }}</p>
+                        
+                        <div style="margin-top: 10px;">
+                          <ion-button size="small" fill="outline" (click)="startEditNewUserMembership(membership)">
+                            <ion-icon slot="start" name="create"></ion-icon>
+                            Bearbeiten
+                          </ion-button>
+                          <ion-button size="small" fill="outline" color="danger" (click)="deleteNewUserMembership(membership)">
+                            <ion-icon slot="start" name="trash"></ion-icon>
+                            Löschen
+                          </ion-button>
+                        </div>
+                      </ion-card-content>
+                    </ion-card>
+                  }
+
+                  @if (getMembershipsForCompany(company.id).length === 0) {
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--ion-color-light); border-radius: 8px;">
+                      <span style="flex: 1; font-size: 0.9em; color: var(--ion-color-medium);">
+                        Bitte Abteilung für {{ company.name }} zuweisen
+                      </span>
+                      <ion-button size="small" fill="outline" (click)="startAddMembershipForNewUser(company.id)">
+                        <ion-icon slot="start" name="add"></ion-icon>
+                        Zuweisen
+                      </ion-button>
+                    </div>
+                  }
+                </div>
+              }
+            }
+
+            @if ((createForm.value.companies || []).length === 0) {
+              <p style="text-align: center; color: var(--ion-color-medium); padding: 20px;">
+                Bitte zuerst Gesellschaften auswählen
+              </p>
+            }
+          </div>
+
+          @if (newMembership.company !== undefined && newMembership.company >= 0 || editingMembership) {
+            <ion-card color="light">
+              <ion-card-header>
+                <ion-card-title>
+                  {{ editingMembership ? 'Zuordnung bearbeiten' : 'Neue Zuordnung' }}
+                </ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                @if (!editingMembership) {
+                  <ion-item>
+                    <ion-label position="stacked">Gesellschaft *</ion-label>
+                    <ion-select 
+                      [(ngModel)]="currentNewMembership.company" 
+                      [ngModelOptions]="{standalone: true}"
+                      interface="popover" 
+                      placeholder="Gesellschaft wählen">
+                      @for (company of companies; track company.id) {
+                        @if ((createForm.value.companies || []).includes(company.id)) {
+                          <ion-select-option [value]="company.id">
+                            {{ company.name }} ({{ company.code }})
+                          </ion-select-option>
+                        }
+                      }
+                    </ion-select>
+                  </ion-item>
+                }
+
+                @if (editingMembership) {
+                  <ion-item lines="none">
+                    <ion-label>
+                      <strong>Gesellschaft:</strong> {{ getCompanyName(editingMembership.company) }}
+                    </ion-label>
+                  </ion-item>
+                }
+
+                <ion-item>
+                  <ion-label position="stacked">Abteilung *</ion-label>
+                  <ion-select 
+                    [(ngModel)]="currentNewMembership.department" 
+                    [ngModelOptions]="{standalone: true}"
+                    interface="popover" 
+                    placeholder="Abteilung wählen"
+                    [disabled]="!currentNewMembership.company">
+                    @for (dept of getFilteredDepartments(); track dept.id) {
+                      <ion-select-option [value]="dept.id">
+                        {{ dept.name }}
+                      </ion-select-option>
+                    }
+                  </ion-select>
+                  @if (!currentNewMembership.company) {
+                    <ion-note slot="helper">Bitte zuerst Gesellschaft wählen</ion-note>
+                  }
+                </ion-item>
+
+                <ion-item>
+                  <ion-label position="stacked">Rolle *</ion-label>
+                  <ion-select 
+                    [(ngModel)]="currentNewMembership.role"
+                    [ngModelOptions]="{standalone: true}"
+                    interface="popover" 
+                    placeholder="Rolle wählen">
+                    @for (role of roles; track role.id) {
+                      <ion-select-option [value]="role.id">
+                        {{ role.name }} (Level {{ role.hierarchy_level }})
+                      </ion-select-option>
+                    }
+                  </ion-select>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label position="stacked">Positionsbezeichnung</ion-label>
+                  <ion-input 
+                    [(ngModel)]="currentNewMembership.position_title"
+                    [ngModelOptions]="{standalone: true}"
+                    placeholder="z.B. Senior Developer"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label>Primäre Zuordnung</ion-label>
+                  <ion-toggle 
+                    [(ngModel)]="currentNewMembership.is_primary"
+                    [ngModelOptions]="{standalone: true}"></ion-toggle>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label>Stabsstelle</ion-label>
+                  <ion-toggle 
+                    [(ngModel)]="currentNewMembership.is_staff_position"
+                    [ngModelOptions]="{standalone: true}"></ion-toggle>
+                  <ion-note slot="helper">Wird im Organigramm horizontal neben GF angezeigt</ion-note>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label>Aktiv</ion-label>
+                  <ion-toggle 
+                    [(ngModel)]="currentNewMembership.is_active"
+                    [ngModelOptions]="{standalone: true}"></ion-toggle>
+                </ion-item>
+
+                <div style="margin-top: 10px;">
+                  <ion-button size="small" (click)="saveNewUserMembership()">
+                    Speichern
+                  </ion-button>
+                  <ion-button size="small" fill="outline" (click)="cancelEditNewUser()">
+                    Abbrechen
+                  </ion-button>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          }
+
+          <!-- Blink Integration Section -->
+          <ion-item lines="none" class="section-header">
+            <ion-label>
+              <h2>Blink Integration</h2>
+              <p>Erforderlich für Auswertungen und Zeiterfassung</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Blink User ID</ion-label>
+            <ion-input type="number" formControlName="blink_id" placeholder="z.B. 1234"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Blink Company ID</ion-label>
+            <ion-input type="number" formControlName="blink_company" placeholder="z.B. 1"></ion-input>
+          </ion-item>
+
+          <!-- Urlaub Section -->
+          <ion-item lines="none" class="section-header">
+            <ion-label>
+              <h2>Urlaubsverwaltung</h2>
+              <p>Urlaubsanspruch und Resturlaub für {{ createForm.get('vacation_year')?.value }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Urlaubsanspruch (Tage)</ion-label>
+            <ion-input type="number" formControlName="vacation_entitlement" placeholder="30"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Resturlaub Vorjahr (Tage)</ion-label>
+            <ion-input type="number" formControlName="carryover_vacation" placeholder="0"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Gültig für Jahr</ion-label>
+            <ion-input type="number" formControlName="vacation_year" placeholder="2025"></ion-input>
+          </ion-item>
+
+          @if (userService.isLoading()) {
+            <ion-item lines="none">
+              <ion-label>Lädt / speichert …</ion-label>
+            </ion-item>
+          } 
+          @if (userService.error()) {
+            <ion-item lines="none">
+              <ion-label color="danger">{{ userService.error() }}</ion-label>
+            </ion-item>
+          }
+
+          <ion-button type="submit" expand="block" [disabled]="createForm.invalid || userService.isLoading()">
+            Benutzer anlegen
+          </ion-button>
+        </ion-list>
+      </form>
+    </ng-container>
+
+    <ng-container tab-content-archive>
+      <ion-list>
+        <ion-list-header>
+          <ion-label>
+            <h2>Archiv – Inaktive Benutzer</h2>
+            <p>Deaktivierte Benutzer</p>
+          </ion-label>
+        </ion-list-header>
+
+        @for (user of archivedUsers(); track user.id) {
+          <ion-item lines="full" button (click)="openEditUser(user)">
+            <ion-label>
+              <h3>
+                @if (isUserOnline(user.username)) {
+                  <ion-icon name="ellipse-outline" color="success" style="font-size: 12px; margin-right: 4px;"></ion-icon>
+                }
+                {{ user.username }}
+              </h3>
+              <p>{{ user.email }}</p>
+            </ion-label>
+          </ion-item>
+        } @empty {
+          <ion-item lines="full" button>
+            <ion-label>
+              <h3>Keine Daten vorhanden</h3>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </ng-container>
+  </app-tab-layout>
+</ion-content>

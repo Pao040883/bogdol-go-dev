@@ -1,0 +1,38 @@
+FROM python:3.11-slim
+
+# Umgebungsvariablen
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Arbeitsverzeichnis setzen
+WORKDIR /app
+
+# System-Dependencies installieren (mit Watchdog für Auto-Reload)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    curl \
+    netcat-traditional \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Python-Dependencies installieren
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Watchdog für besseres Auto-Reload installieren
+RUN pip install --no-cache-dir watchdog[watchmedo]
+
+# Application Code wird als Volume gemountet, nicht kopiert!
+# COPY . .  <-- Nicht im Dev-Mode!
+
+# Static Files und Media Directories erstellen
+RUN mkdir -p /app/staticfiles /app/media
+
+# Port freigeben
+EXPOSE 8000
+
+# Default Command mit Auto-Reload
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

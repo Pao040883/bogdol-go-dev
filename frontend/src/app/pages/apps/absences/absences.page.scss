@@ -1,0 +1,328 @@
+// Modern Calendar-Based Absences Page
+
+.absences-container {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Top Section Layout
+.top-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Year Navigation in Header
+ion-toolbar {
+  .year-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+
+    .year-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    ion-button {
+      --color: white;
+      margin: 0;
+    }
+  }
+}
+
+// Statistics Table
+.stats-table-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .stats-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    thead {
+      background: var(--ion-color-light);
+
+      th {
+        padding: 12px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        text-align: left;
+        border-bottom: 2px solid var(--ion-color-light-shade);
+
+        &.text-center {
+          text-align: center;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--ion-color-light);
+        transition: background 0.2s;
+
+        &:hover {
+          background: var(--ion-color-light-tint);
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: 12px 16px;
+          font-size: 0.9rem;
+
+          &.text-center {
+            text-align: center;
+          }
+
+          &.bold-count {
+            font-weight: 600;
+            font-size: 1rem;
+          }
+
+          .type-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            ion-icon {
+              font-size: 1.2rem;
+            }
+
+            span {
+              font-weight: 400;
+              color: var(--ion-color-dark);
+            }
+          }
+
+          ion-toggle {
+            --handle-width: 18px;
+            --handle-height: 18px;
+            width: 40px;
+            height: 24px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Vacation Summary Card
+.vacation-summary-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .vacation-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #FFA726;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon {
+      font-size: 28px;
+      color: white;
+    }
+  }
+
+  .vacation-info {
+    flex: 1;
+
+    .vacation-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+      margin-bottom: 4px;
+    }
+
+    .vacation-subtitle {
+      font-size: 0.9rem;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+// Calendar Grid
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Month Card
+.month-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .month-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--ion-color-light);
+    border-bottom: 1px solid var(--ion-color-light-shade);
+
+    .month-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--ion-color-dark);
+    }
+
+    .month-absence-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .absence-stat-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        ion-icon {
+          font-size: 1rem;
+        }
+
+        .stat-days {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--ion-color-dark);
+        }
+      }
+    }
+  }
+
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--ion-color-light-tint);
+    border-bottom: 1px solid var(--ion-color-light-shade);
+
+    .weekday {
+      padding: 6px 4px;
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+
+    .day-cell {
+      position: relative;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      .day-number {
+        font-size: 0.85rem;
+        color: var(--ion-color-dark);
+        font-weight: 500;
+      }
+
+      .multi-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: var(--ion-color-primary);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 600;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      &.empty {
+        pointer-events: none;
+        background: transparent;
+      }
+
+      &.today:not(.has-absence) {
+        .day-number {
+          background: var(--ion-color-primary);
+          color: white;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+        }
+      }
+
+      &.weekend:not(.has-absence) {
+        background: #fafafa;
+      }
+
+      &.has-absence {
+        .day-number {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          color: white;
+        }
+        
+        &:hover {
+          transform: scale(1.1);
+          z-index: 1;
+        }
+      }
+    }
+  }
+}

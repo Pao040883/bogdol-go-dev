@@ -1,0 +1,67 @@
+<ion-list class="ion-padding">
+  <ion-item button lines="none" color="secondary" [routerLink]="['/dashboard']" routerLinkActive="router-link-active">
+    <ion-icon aria-hidden="true" name="home-outline" slot="start"></ion-icon>
+    <ion-label>Startseite</ion-label>
+  </ion-item>
+  @if (userFeatures.features()?.can_view_sofo || userFeatures.features()?.can_view_workorders || userFeatures.features()?.can_view_work_tickets || userFeatures.features()?.can_view_contacts || userFeatures.features()?.can_view_absences) {
+  <ion-item button lines="none" color="secondary" [routerLink]="['/apps']" routerLinkActive="router-link-active">
+    <ion-icon aria-hidden="true" name="apps-outline" slot="start"></ion-icon>
+    <ion-label>Apps</ion-label>
+    @if (badgeService.appBadges$ | async; as appBadges) {
+      @if (appBadges > 0) {
+        <ion-badge color="danger" class="nav-badge" slot="end">{{ appBadges }}</ion-badge>
+      }
+    }
+  </ion-item>
+  }
+  @if (userFeatures.features()?.can_view_chat) {
+  <ion-item button lines="none" color="secondary" [routerLink]="['/chat']" routerLinkActive="router-link-active">
+    <ion-icon aria-hidden="true" name="chatbubbles-outline" slot="start"></ion-icon>
+    <ion-label>Chat</ion-label>
+    @if (badgeService.getBadge('chat') | async; as chatBadges) {
+      @if (chatBadges > 0) {
+        <ion-badge color="danger" class="nav-badge" slot="end">{{ chatBadges }}</ion-badge>
+      }
+    }
+  </ion-item>
+  }
+  @if (userFeatures.features()?.can_view_external_links) {
+  <ion-item button lines="none" color="secondary" [routerLink]="['/external-links']" routerLinkActive="router-link-active">
+    <ion-icon
+      aria-hidden="true"
+      name="paper-plane-outline"
+      slot="start"
+    ></ion-icon>
+    <ion-label>Externe Links</ion-label>
+  </ion-item>
+  }
+  @if (userFeatures.features()?.can_view_analytics) {
+  <ion-item button lines="none" color="secondary" [routerLink]="['/auswertungen']" routerLinkActive="router-link-active">
+    <ion-icon
+      aria-hidden="true"
+      name="stats-chart-outline"
+      slot="start"
+    ></ion-icon>
+    <ion-label>Auswertungen</ion-label>
+  </ion-item>
+  }
+  @if(isSuperuser()) {
+  <ion-item button lines="none" color="secondary" [routerLink]="['/admin']" routerLinkActive="router-link-active">
+    <ion-icon
+      aria-hidden="true"
+      name="settings-outline"
+      slot="start"
+    ></ion-icon>
+    <ion-label>Admin</ion-label>
+    @if (badgeService.getBadge('users') | async; as userBadges) {
+      @if (userBadges > 0) {
+        <ion-badge color="danger" class="nav-badge" slot="end">{{ userBadges }}</ion-badge>
+      }
+    }
+  </ion-item>
+  }
+  <ion-item button lines="none" color="secondary" (click)="logout()">
+    <ion-icon aria-hidden="true" name="log-out-outline" slot="start"></ion-icon>
+    <ion-label>Logout</ion-label>
+  </ion-item>
+</ion-list>

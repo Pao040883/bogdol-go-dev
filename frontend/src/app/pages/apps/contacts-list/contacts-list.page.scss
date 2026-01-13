@@ -1,0 +1,87 @@
+table {
+    margin-left: 16px;
+    tr {
+        td{
+            color: #666666;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+
+        .substitution {
+            font-size: 16px;
+            cursor: pointer;
+
+            span {
+                color: #1fd403;
+            }
+        }
+
+        &.absence-info {
+            padding: 12px 8px;
+
+            ion-chip {
+                margin: 0;
+                font-weight: 500;
+            }
+        }
+    }
+}
+
+.relevance-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ion-color-warning);
+    margin-top: 4px;
+    
+    ion-icon {
+        font-size: 14px;
+    }
+}
+
+.search-container {
+    position: relative;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: 60px;
+    left: 16px;
+    right: 16px;
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--ion-background-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    
+    ion-item {
+        --padding-start: 12px;
+        --inner-padding-end: 12px;
+        font-size: 14px;
+    }
+}
+
+.related-queries {
+    padding: 8px 16px;
+    background: var(--ion-color-light);
+    border-bottom: 1px solid var(--ion-color-light-shade);
+    
+    .query-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+        
+        ion-chip {
+            cursor: pointer;
+            margin: 0;
+            font-size: 13px;
+            
+            &:hover {
+                opacity: 0.8;
+            }
+        }
+    }
+}

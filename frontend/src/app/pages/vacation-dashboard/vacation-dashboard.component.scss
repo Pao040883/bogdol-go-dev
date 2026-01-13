@@ -1,0 +1,313 @@
+.vacation-dashboard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+
+  ion-header {
+    ion-toolbar {
+      --background: transparent;
+      --color: white;
+    }
+  }
+
+  ion-content {
+    --background: transparent;
+  }
+
+  // Loading State
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    color: white;
+
+    ion-spinner {
+      margin-bottom: 1rem;
+      --color: white;
+    }
+  }
+
+  // Cards General Styling
+  ion-card {
+    margin: 1rem 0;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    ion-card-header {
+      ion-card-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--ion-color-primary);
+
+        ion-icon {
+          font-size: 1.5rem;
+        }
+      }
+    }
+  }
+
+  // Stats Card
+  .stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+
+    ion-card-header ion-card-title {
+      color: white;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+
+      .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+
+          &.remaining {
+            color: #4ade80;
+          }
+
+          &.carryover {
+            color: #fbbf24;
+          }
+        }
+
+        .stat-label {
+          font-size: 0.875rem;
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+
+  // Progress Card
+  .progress-card {
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+
+      .percentage {
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: var(--ion-color-primary);
+      }
+    }
+
+    ion-progress-bar {
+      height: 12px;
+      border-radius: 6px;
+      margin: 1rem 0;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  // Actions Card
+  .actions-card {
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      ion-button {
+        --border-radius: 12px;
+        height: 48px;
+        font-weight: 600;
+
+        ion-icon {
+          font-size: 1.2rem;
+        }
+      }
+    }
+  }
+
+  // Recent Vacations Card
+  .recent-card {
+    .vacation-item {
+      --padding-start: 0;
+      --padding-end: 0;
+      --inner-padding-end: 0;
+      border-bottom: 1px solid var(--ion-color-light);
+      margin-bottom: 0.5rem;
+      padding: 1rem 0;
+
+      &:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+      }
+
+      .vacation-info {
+        flex: 1;
+
+        .vacation-dates {
+          font-weight: 600;
+          color: var(--ion-color-dark);
+          margin-bottom: 0.25rem;
+        }
+
+        .vacation-duration {
+          font-size: 0.875rem;
+          color: var(--ion-color-medium);
+        }
+      }
+
+      ion-chip {
+        margin: 0;
+      }
+    }
+  }
+
+  // Calendar Card
+  .calendar-card {
+    .calendar-info {
+      text-align: center;
+      padding: 1rem 0;
+
+      p {
+        color: var(--ion-color-medium);
+        margin-bottom: 1rem;
+      }
+
+      ion-button {
+        --border-radius: 12px;
+      }
+    }
+  }
+
+  // Team Card
+  .team-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+
+    ion-card-header ion-card-title {
+      color: white;
+    }
+
+    .team-info {
+      text-align: center;
+      padding: 1rem 0;
+
+      p {
+        margin-bottom: 1rem;
+        opacity: 0.9;
+      }
+
+      ion-button {
+        --color: white;
+        --border-color: rgba(255, 255, 255, 0.5);
+        --border-radius: 12px;
+      }
+    }
+  }
+
+  // Info Card
+  .info-card {
+    ion-item {
+      --padding-start: 0;
+      --inner-padding-end: 0;
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      ion-icon {
+        margin-inline-end: 1rem;
+        font-size: 1.5rem;
+      }
+
+      .info-title {
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin-bottom: 0.25rem;
+      }
+
+      .info-text {
+        font-size: 0.875rem;
+        color: var(--ion-color-medium);
+        line-height: 1.4;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (min-width: 768px) {
+  .vacation-dashboard {
+    .vacation-summary {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+
+      .stats-card {
+        grid-row: span 2;
+      }
+
+      .progress-card,
+      .actions-card {
+        grid-column: 2;
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .vacation-dashboard {
+    ion-content {
+      --padding-start: 2rem;
+      --padding-end: 2rem;
+    }
+
+    .vacation-summary {
+      grid-template-columns: 2fr 1fr 1fr;
+
+      .stats-card {
+        grid-column: 1;
+        grid-row: span 2;
+      }
+
+      .progress-card {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .actions-card {
+        grid-column: 3;
+        grid-row: 1;
+      }
+    }
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .vacation-dashboard {
+    ion-card {
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  }
+}

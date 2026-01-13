@@ -1,0 +1,21 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Apps</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (appTiles$ | async; as tiles) {
+    <app-tile-grid 
+      [tiles]="tiles"
+      [colSizeXs]="12"
+      [colSizeSm]="6"
+      [colSizeMd]="6"
+      [colSizeLg]="4"
+      [colSizeXl]="2">
+    </app-tile-grid>
+  }
+</ion-content>

@@ -1,0 +1,47 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Icon auswählen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Icon suchen..."
+      [value]="searchTerm()"
+      (ionInput)="searchTerm.set($event.detail.value || '')"
+      [debounce]="300">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    @for (icon of filteredIcons(); track icon.name) {
+      <ion-item 
+        button 
+        (click)="selectIcon(icon)"
+        [class.selected]="selectedIcon === icon.name">
+        <div class="icon-item-content">
+          <div class="icon-preview" [style.background-color]="previewColor || 'var(--ion-color-primary)'">
+            <ion-icon [name]="icon.name"></ion-icon>
+          </div>
+          <div class="icon-info">
+            <div class="icon-label">{{ icon.label }}</div>
+            <div class="icon-category">{{ icon.category }}</div>
+          </div>
+          @if (selectedIcon === icon.name) {
+            <ion-icon name="checkmark-outline" class="checkmark"></ion-icon>
+          }
+        </div>
+      </ion-item>
+    } @empty {
+      <div class="no-results">
+        <p>Keine Icons gefunden</p>
+        <small>Versuche einen anderen Suchbegriff</small>
+      </div>
+    }
+  </ion-list>
+</ion-content>

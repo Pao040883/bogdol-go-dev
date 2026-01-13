@@ -1,0 +1,382 @@
+// Absence Detail Modal Styles
+.modal-content {
+  --background: #f8f9fa;
+}
+
+// Hero Section
+.hero-section {
+  background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+  color: white;
+  padding: 2rem 1rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+    opacity: 0.3;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    color: white;
+  }
+
+  .hero-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+  }
+}
+
+// Main Content
+.main-content {
+  padding: 1rem;
+  padding-top: 0;
+  margin-top: -1rem;
+  position: relative;
+  z-index: 2;
+}
+
+// Info Cards
+.info-card {
+  margin-bottom: 1rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  overflow: hidden;
+
+  ion-card-content {
+    padding: 1.5rem;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    ion-icon {
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  .date-range {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    padding: 1rem;
+    background: var(--ion-color-light);
+    border-radius: 12px;
+
+    .start-date,
+    .end-date {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--ion-color-dark);
+    }
+
+    ion-icon {
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .duration {
+    text-align: center;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--ion-color-light);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      font-weight: 500;
+      color: var(--ion-color-medium);
+    }
+
+    .value {
+      font-weight: 500;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+// Comments Card
+.comments-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  overflow: hidden;
+
+  ion-card-header {
+    background: var(--ion-color-light);
+    padding: 1rem 1.5rem;
+  }
+
+  .comments-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    ion-icon {
+      font-size: 1.5rem;
+    }
+
+    span {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ion-color-dark);
+    }
+  }
+
+  ion-card-content {
+    padding: 1.5rem;
+  }
+}
+
+// Comment Form
+.comment-form {
+  margin-bottom: 2rem;
+
+  .form-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .comment-input {
+    background: var(--ion-color-light);
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+
+    &:focus-within {
+      border-color: var(--ion-color-primary);
+    }
+
+    ion-textarea {
+      --padding-start: 1rem;
+      --padding-end: 1rem;
+      --padding-top: 1rem;
+      --padding-bottom: 1rem;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    .comment-type {
+      flex: 1;
+      --padding-start: 1rem;
+      --padding-end: 1rem;
+      --background: var(--ion-color-light);
+      border-radius: 8px;
+    }
+
+    ion-button {
+      --border-radius: 50%;
+      width: 44px;
+      height: 44px;
+    }
+  }
+}
+
+// Comment Filters
+.comment-filters {
+  margin-bottom: 1.5rem;
+
+  ion-segment {
+    --background: var(--ion-color-light);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  ion-segment-button {
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    --background-checked: white;
+    --border-radius: 6px;
+    margin: 2px;
+
+    ion-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  }
+}
+
+// Comments List
+.comments-list {
+  .comments {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .comment-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    border-left: 4px solid var(--ion-color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    &[data-type="supervisor"] {
+      border-left-color: var(--ion-color-warning);
+    }
+
+    &[data-type="hr"] {
+      border-left-color: var(--ion-color-danger);
+    }
+
+    &[data-type="employee"] {
+      border-left-color: var(--ion-color-success);
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      .comment-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .comment-date {
+          font-size: 0.8rem;
+          color: var(--ion-color-medium);
+        }
+      }
+    }
+
+    .comment-text {
+      margin: 0;
+      line-height: 1.5;
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+// No Comments State
+.no-comments {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 1.5rem 1rem;
+
+    .hero-icon {
+      font-size: 3rem;
+    }
+
+    .hero-title {
+      font-size: 1.3rem;
+    }
+  }
+
+  .main-content {
+    padding: 0.75rem;
+  }
+
+  .info-card ion-card-content {
+    padding: 1rem;
+  }
+
+  .comments-card ion-card-content {
+    padding: 1rem;
+  }
+
+  .comment-form .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    ion-button {
+      width: 100%;
+      --border-radius: 8px;
+      height: auto;
+    }
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .modal-content {
+    --background: var(--ion-color-dark);
+  }
+
+  .info-card,
+  .comments-card {
+    background: var(--ion-color-step-50);
+  }
+
+  .comment-item {
+    background: var(--ion-color-step-100);
+  }
+
+  .date-range,
+  .comment-input {
+    background: var(--ion-color-step-100) !important;
+  }
+}

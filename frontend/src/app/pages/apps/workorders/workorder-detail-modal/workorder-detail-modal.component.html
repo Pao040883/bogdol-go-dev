@@ -1,0 +1,151 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="close()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Arbeitsschein Details</ion-title>
+    @if (isCheckingPermissions()) {
+      <ion-buttons slot="end">
+        <ion-spinner name="crescent"></ion-spinner>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+  @if (!canView()) {
+    <ion-toolbar color="danger">
+      <ion-title class="ion-text-center" style="font-size: 0.9rem;">
+        <ion-icon name="lock-closed"></ion-icon>
+        Keine Berechtigung zur Ansicht
+      </ion-title>
+    </ion-toolbar>
+  } @else if (!canEdit() && workOrder?.status === 'submitted') {
+    <ion-toolbar color="warning">
+      <ion-title class="ion-text-center" style="font-size: 0.9rem;">
+        <ion-icon name="eye"></ion-icon>
+        Nur-Lesen-Modus (Keine Bearbeitungsberechtigung)
+      </ion-title>
+    </ion-toolbar>
+  }
+</ion-header>
+
+<ion-content>
+  @if (workOrder && pdfUrl()) {
+    <div class="pdf-container">
+      <ngx-extended-pdf-viewer
+        [src]="pdfUrl()"
+        [height]="'100%'"
+        [showSidebarButton]="false"
+        [sidebarVisible]="false"
+        [textLayer]="true"
+        [showFindButton]="false"
+        [showPrintButton]="false"
+        [showSecondaryToolbarButton]="false"
+        [showPresentationModeButton]="false"
+        [showOpenFileButton]="false"
+        [printResolution]="150"
+        [language]="'de'">
+      </ngx-extended-pdf-viewer>
+    </div>
+  }
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="footer-buttons">
+      @if (workOrder?.status === 'submitted' && workOrder?.can_cancel && canView()) {
+        <ion-button expand="block" fill="outline" color="warning" (click)="cancelWorkOrder()" [disabled]="isLoading()" size="small">
+          <ion-icon name="close-circle" slot="start"></ion-icon>
+          Stornieren
+        </ion-button>
+      }
+      
+      <ion-button expand="block" fill="outline" color="primary" (click)="openChatModal()" [disabled]="isLoading() || !canView()" size="small">
+        <ion-icon name="chatbubbles" slot="start"></ion-icon>
+        Nachricht
+      </ion-button>
+      
+      @if (workOrder?.status === 'submitted' && workOrder?.can_mark_billed && canEdit()) {
+        <ion-button expand="block" color="success" (click)="markAsBilled()" [disabled]="isLoading()" size="small">
+          @if (isLoading()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+            Abgerechnet
+          }
+        </ion-button>
+      }
+      
+      @if (!canEdit() && canView()) {
+        <ion-chip color="warning" style="margin: 8px auto;">
+          <ion-icon name="lock-closed"></ion-icon>
+          <ion-label>Keine Bearbeitungsberechtigung</ion-label>
+        </ion-chip>
+      }
+    </div>
+  </ion-toolbar>
+</ion-footer>
+
+<!-- Chat Message Popover -->
+<ion-popover 
+  [isOpen]="isChatModalOpen()" 
+  (didDismiss)="closeChatModal()"
+  [dismissOnSelect]="false"
+  [showBackdrop]="true"
+  size="cover"
+  class="chat-popover">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeChatModal()">
+            <ion-icon name="close" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Nachricht senden</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title style="font-size: 1rem;">
+            An: {{ workOrder?.submitted_by_details?.first_name }} {{ workOrder?.submitted_by_details?.last_name }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p style="font-size: 0.875rem; color: var(--ion-color-medium); margin-bottom: 12px;">
+            Das gescannte Dokument wird automatisch als Anhang mitgesendet.
+          </p>
+          
+          <ion-item>
+            <ion-label position="stacked">Nachricht</ion-label>
+            <ion-textarea
+              [(ngModel)]="chatMessage"
+              rows="6"
+              placeholder="Ihre Nachricht..."
+              [disabled]="isLoading()">
+            </ion-textarea>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-button 
+          expand="block" 
+          color="primary" 
+          (click)="sendChatMessage()" 
+          [disabled]="!chatMessage().trim() || isLoading()">
+          @if (isLoading()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            <ion-icon name="send" slot="start"></ion-icon>
+            Nachricht senden
+          }
+        </ion-button>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-popover>

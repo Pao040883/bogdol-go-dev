@@ -1,0 +1,150 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>blink-usage</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+<mat-card style="margin-bottom: 32px;">
+    <mat-card-header>
+        <mat-form-field>
+            <mat-label>Wähle einen Zeitraum aus</mat-label>
+            <mat-date-range-input [rangePicker]="picker">
+                <input [(ngModel)]="startDate" matStartDate placeholder="Startdatum">
+                <input [(ngModel)]="endDate" matEndDate placeholder="Enddatum">
+            </mat-date-range-input>
+            <mat-hint>DD/MM/YYYY – DD/MM/YYYY</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+
+        </mat-form-field>
+        <button [disabled]="!startDate || !endDate" mat-button (click)="onLoadDataClick()">Auswerten</button>
+        @if (filteredServiceManagers.length > 0) {
+        <div class="filters">
+            <!-- Sortierbuttons -->
+            <button mat-button (click)="setSortField('firstName')">
+                Sortiere nach Vorname
+            </button>
+            <button mat-button (click)="setSortField('lastName')">
+                Sortiere nach Nachname
+            </button>
+            <button mat-button (click)="toggleSortDirection()">
+                Richtung: {{ sortDirection === 'asc' ? 'Aufsteigend' : 'Absteigend' }}
+            </button>
+        </div>
+        }
+    </mat-card-header>
+
+    <mat-card-content style="margin-top: 24px;">
+        @if (filteredServiceManagers.length > 0) {
+        <mat-button-toggle-group name="areas">
+            @for(area of uniqueAreas; track area) {
+                <mat-button-toggle (click)="filterByArea(area)" value="{{ area }}">{{ area }}</mat-button-toggle>
+            }
+            <mat-button-toggle (click)="resetFilter()" value="Alle anzeigen">Alle anzeigen</mat-button-toggle>
+          </mat-button-toggle-group>
+        }
+        @if (filteredServiceManagers.length > 0 || filterText != '') {
+        <mat-form-field style="width: 100%; margin-top: 24px;">
+            <mat-label>Suche</mat-label>
+            <input matInput [(ngModel)]="filterText" placeholder="Name oder Ort eingeben" (input)="applyFilter()" />
+        </mat-form-field>
+        }
+    </mat-card-content>
+</mat-card>
+<mat-card>
+    <mat-card-content>
+        @if (loading) {
+        <div>
+            <p>Daten werden geladen...</p>
+        </div>
+        }
+        <!-- <div>
+            <div>@if(sortField == 'firstName'){
+                Vorname und Nachname
+                } @else {
+                Nachname, Vorname
+                }</div>
+                <div>Objekte</div>
+                <div>%</div>
+        </div> -->
+        @if (filteredServiceManagers.length > 0) {
+        <mat-accordion>
+            <mat-expansion-panel hideToggle [disabled]="true">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        @if(sortField == 'firstName'){
+                        Vorname und Nachname
+                        } @else {
+                        Nachname, Vorname
+                        }
+                    </mat-panel-title>
+                    <mat-panel-description class="counts">
+                        Objekte
+                        <span class="percentage">
+                            %
+                        </span>
+                    </mat-panel-description>
+                </mat-expansion-panel-header>
+            </mat-expansion-panel>
+            @for (manager of filteredServiceManagers | sortAndFilter:sortField:sortDirection:filter; track manager.id) {
+            <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        @if(sortField == 'firstName'){
+                        {{ manager.firstName }} {{ manager.lastName }}
+                        } @else {
+                        {{ manager.lastName }}, {{ manager.firstName }}
+                        }
+                    </mat-panel-title>
+                    <mat-panel-description class="counts">
+                        Objekte: {{ countFullyExportedLocations(manager.id) }} /
+                        {{ manager.locations.length }}
+                        <span class="percentage" [ngClass]="{
+              'fully-exported': getExportPercentageForLocations(manager) > 60,
+              'not-fully-exported': getExportPercentageForLocations(manager) <= 60
+            }">
+                            {{ getExportPercentageForLocations(manager) | number: '1.0-0' }}%
+                        </span>
+                    </mat-panel-description>
+                </mat-expansion-panel-header>
+
+                <table mat-table [dataSource]="manager.locations" class="mat-elevation-z8">
+                    <!-- Objektname Spalte -->
+                    <ng-container matColumnDef="objectNumber">
+                        <th mat-header-cell *matHeaderCellDef> Objekt </th>
+                        <td mat-cell *matCellDef="let location"> {{ location.objectNumber }} / {{ location.name }}</td>
+                    </ng-container>
+
+                    <!-- Status Spalte -->
+                    <ng-container matColumnDef="statuses">
+                        <th mat-header-cell *matHeaderCellDef> Status </th>
+                        <td mat-cell *matCellDef="let location">
+                            @if (getStatusCounts(location.worklogs).length > 0) {
+                                @for (status of getStatusCounts(location.worklogs); track status.key) {
+                                <div>
+                                    {{ translateStatus(status.key) }}: {{ status.count }}
+                                </div>
+                                }
+                            } @else {
+                                <div>Keine Zeiten verfügbar</div>
+                            }
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="['objectNumber', 'statuses']"></tr>
+                    <tr mat-row *matRowDef="let row; columns: ['objectNumber', 'statuses']"></tr>
+                </table>
+            </mat-expansion-panel>
+            }
+        </mat-accordion>
+        }
+
+        @if (filteredServiceManagers.length === 0 && !loading) {
+        <div>
+            <p>Keine Ergebnisse gefunden.</p>
+        </div>
+        }
+    </mat-card-content>
+</mat-card>
+</ion-content>

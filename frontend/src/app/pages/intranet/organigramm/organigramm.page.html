@@ -1,0 +1,63 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/intranet"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Organigramm</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="expandAll()">
+        <ion-icon name="expand-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="collapseAll()">
+        <ion-icon name="contract-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="fitChart()">
+        <ion-icon name="git-network-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button (click)="loadOrgChart()">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <!-- Company Selection Toolbar -->
+  <ion-toolbar>
+    <ion-select 
+      [(ngModel)]="selectedCompanyId" 
+      (ionChange)="onCompanyChange()"
+      placeholder="Gesellschaft auswählen"
+      interface="popover">
+      @for (company of companies; track company.id) {
+        <ion-select-option [value]="company.id">
+          {{ company.name }}
+        </ion-select-option>
+      }
+    </ion-select>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Organigramm...</p>
+    </div>
+  } @else {
+    @if (orgChartData.length === 0 || !selectedCompanyId) {
+      <div class="empty-state">
+        <ion-icon name="git-network-outline" size="large" color="medium"></ion-icon>
+        <h2>Keine Daten verfügbar</h2>
+        <p>Bitte wählen Sie eine Gesellschaft aus.</p>
+      </div>
+    } @else if (departments.length === 0) {
+      <div class="empty-state">
+        <ion-icon name="git-network-outline" size="large" color="warning"></ion-icon>
+        <h2>Keine Abteilungen zugeordnet</h2>
+        <p>Die ausgewählte Gesellschaft hat noch keine Abteilungen.</p>
+        <p><small>Bitte weisen Sie Abteilungen unter <strong>Admin → Abteilungen</strong> der Gesellschaft zu.</small></p>
+      </div>
+    } @else {
+      <div #chartContainer class="chart-container"></div>
+    }
+  }
+</ion-content>

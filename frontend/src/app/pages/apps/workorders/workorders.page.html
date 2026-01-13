@@ -1,0 +1,391 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Arbeitsscheine</ion-title>
+    <ion-buttons slot="end">
+      @if (userFeatures.features()?.can_assign_workorders) {
+        <ion-button (click)="openFakturaAssignmentModal()">
+          <ion-icon slot="icon-only" name="people"></ion-icon>
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-tabs>
+    <!-- Tab: Zur Abrechnung (Faktura bearbeitet hier) -->
+    <ion-tab tab="billing">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Zur Abrechnung</ion-title>
+        </ion-toolbar>
+        
+        <!-- Toggle für Alle/Eigene anzeigen -->
+        @if (canViewAllItems()) {
+          <ion-toolbar>
+            <ion-chip 
+              [color]="showAll() ? 'primary' : 'medium'"
+              (click)="toggleShowAll()"
+              style="margin: 8px; cursor: pointer;">
+              <ion-icon [name]="showAll() ? 'eye' : 'eye-off'" slot="start"></ion-icon>
+              <ion-label>{{ showAll() ? 'Alle Einträge anzeigen' : 'Nur meine Einträge' }}</ion-label>
+            </ion-chip>
+          </ion-toolbar>
+        }
+      </ion-header>
+
+      <ion-content>
+        <ion-refresher slot="fixed" (ionRefresh)="loadWorkOrders($event)">
+          <ion-refresher-content></ion-refresher-content>
+        </ion-refresher>
+
+        <app-workorder-list-with-bulk
+          [workorders]="billingWorkOrders()"
+          (viewOrder)="viewWorkOrder($event)">
+        </app-workorder-list-with-bulk>
+      </ion-content>
+    </ion-tab>
+
+    <!-- Tab: Einreichen (Upload von Scans) -->
+    <ion-tab tab="submit">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Einreichen</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <!-- Gescannte Dateien Vorschau -->
+        @if (scannedFiles().length > 0) {
+          <ion-list-header>
+            <ion-label>Gescannte Dokumente ({{ scannedFiles().length }})</ion-label>
+          </ion-list-header>
+
+          <ion-list>
+            @for (scan of scannedFiles(); track $index; let i = $index) {
+              <ion-item lines="full">
+                <div class="scan-row">
+                  <!-- Dateiname prominenter mit Preview-Thumbnail -->
+                  <div class="scan-header">
+                    <div class="scan-thumbnail-container" (click)="openPreviewModal(scan)" style="cursor: pointer;">
+                      @if (scan.previewUrl) {
+                        <img [src]="scan.previewUrl" class="scan-thumbnail" alt="Scan Preview" />
+                        <div class="thumbnail-overlay">
+                          <ion-icon name="eye" style="color: white; font-size: 20px;"></ion-icon>
+                        </div>
+                      } @else {
+                        <ion-icon name="document-text" color="primary" style="font-size: 32px;"></ion-icon>
+                      }
+                    </div>
+                    <div class="scan-info">
+                      <div class="scan-filename-prominent">
+                        <strong>{{ scan.file.name }}</strong>
+                      </div>
+                      <small class="scan-metadata">
+                        {{ (scan.file.size / 1024).toFixed(2) }} KB
+                        @if (scan.ocrConfidence !== undefined) {
+                          <span [class.ocr-quality-good]="scan.ocrConfidence >= 40" [class.ocr-quality-bad]="scan.ocrConfidence < 40">
+                             · OCR: {{ scan.ocrConfidence }}%
+                          </span>
+                        }
+                        @if (scan.ocrWarning) {
+                          <span class="ocr-quality-warning"> · {{ scan.ocrWarning }}</span>
+                        }
+                      </small>
+                    </div>
+                  </div>
+                  
+                  @if (scan.isOcrRunning) {
+                    <!-- OCR läuft - zeige Progress Bar -->
+                    <div class="ocr-progress-container">
+                      <ion-progress-bar [value]="scan.ocrProgress || 0" color="primary"></ion-progress-bar>
+                      <small>OCR: {{ ((scan.ocrProgress || 0) * 100) | number:'1.0-0' }}%</small>
+                    </div>
+                  } @else {
+                    <!-- OCR fertig - zeige Inputs -->
+                    @if (scan.isDuplicate) {
+                      <!-- Duplikat-Warnung -->
+                      <div class="duplicate-warning">
+                        <ion-icon name="warning" style="color: white;"></ion-icon>
+                        <small style="color: white;">Duplikat: {{ scan.duplicateInfo?.existingOrder }}</small>
+                      </div>
+                    }
+                    
+                    <div class="scan-inputs-container">
+                      <ion-input 
+                        class="scan-input-compact"
+                        type="text" 
+                        placeholder="O-123456"
+                        [value]="scan.objectNumber"
+                        (ionInput)="handleObjectNumberInput($event, i)"
+                        (ionFocus)="ensureObjectNumberPrefix(i)"
+                        maxlength="8"
+                        [disabled]="scan.isDuplicate"
+                        required>
+                        <ion-label slot="start" class="input-label">O-Nr:</ion-label>
+                      </ion-input>
+                      
+                      <ion-input 
+                        class="scan-input-compact"
+                        type="text" 
+                        placeholder="P1234567"
+                        [value]="scan.projectNumber"
+                        (ionInput)="handleProjectNumberInput($event, i)"
+                        (ionFocus)="ensureProjectNumberPrefix(i)"
+                        maxlength="8"
+                        [disabled]="scan.isDuplicate"
+                        required>
+                        <ion-label slot="start" class="input-label">P-Nr:</ion-label>
+                      </ion-input>
+                      
+                      <div class="scan-input-compact" style="display: flex; align-items: center; padding: 4px 8px; border: 1px solid var(--ion-color-light-shade); border-radius: 6px;">
+                        <ion-label class="input-label" style="margin-right: 8px; min-width: 50px; flex-shrink: 0;">Monat:</ion-label>
+                        <select 
+                          [value]="scan.leistungsmonat"
+                          (change)="handleLeistungsmonatChange($event, i)"
+                          [disabled]="scan.isDuplicate"
+                          style="flex: 1; border: none; outline: none; font-size: 0.875rem; background: transparent; color: var(--ion-text-color); padding: 4px;">
+                          @for (option of getMonthOptions(); track option.value) {
+                            <option [value]="option.value" [selected]="option.value === scan.leistungsmonat">{{ option.label }}</option>
+                          }
+                        </select>
+                        
+                        @if (scan.leistungsmonat_warning) {
+                          <ion-icon name="warning" color="warning" [title]="scan.leistungsmonat_warning" style="margin-left: 4px; flex-shrink: 0;"></ion-icon>
+                        }
+                        @if (scan.leistungsmonat_confidence !== null && scan.leistungsmonat_confidence !== undefined) {
+                          <span [style.color]="scan.leistungsmonat_confidence >= 50 ? 'var(--ion-color-success)' : 'var(--ion-color-warning)'" style="font-size: 0.75rem; margin-left: 4px; flex-shrink: 0; white-space: nowrap;">
+                            {{ scan.leistungsmonat_confidence }}%
+                          </span>
+                        }
+                      </div>
+                    </div>
+                    
+                    <div class="scan-actions">
+                      <ion-button fill="clear" color="primary" (click)="extractNumbersFromFile(scan.file, i)" size="small" title="OCR erneut ausführen">
+                        <ion-icon name="scan" slot="icon-only"></ion-icon>
+                      </ion-button>
+                      <ion-button fill="clear" color="danger" (click)="removeScan(i)" size="small">
+                        <ion-icon name="trash" slot="icon-only"></ion-icon>
+                      </ion-button>
+                    </div>
+                  }
+                </div>
+              </ion-item>
+            }
+          </ion-list>
+
+          <ion-button expand="block" (click)="submitScans()" [disabled]="isUploading() || isSubmitDisabled()">
+            @if (isUploading()) {
+              <ion-spinner name="crescent"></ion-spinner>
+              <span style="margin-left: 8px;">Lade hoch...</span>
+            } @else {
+              <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+              {{ scannedFiles().length }} Scan(s) einreichen
+            }
+          </ion-button>
+        } @else {
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Scans erfassen</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>
+                Fotografieren Sie Ihre Arbeitsscheine mit der Kamera oder wählen Sie Dateien aus.
+                Jeder Scan wird automatisch als PDF gespeichert und kann dann eingereicht werden.
+              </p>
+              <ion-button expand="block" (click)="openCamera()">
+                <ion-icon name="camera" slot="start"></ion-icon>
+                Foto aufnehmen / Datei wählen
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        }
+
+        <!-- Info Card -->
+        <ion-card>
+          <ion-card-content>
+            <p style="font-size: 0.875rem; color: var(--ion-color-medium);">
+              <ion-icon name="checkmark-circle" style="vertical-align: middle;"></ion-icon>
+              Mehrere Scans können gleichzeitig hochgeladen werden<br>
+              <ion-icon name="checkmark-circle" style="vertical-align: middle;"></ion-icon>
+              Automatische Zuweisung an Abrechnungsverantwortliche<br>
+              <ion-icon name="checkmark-circle" style="vertical-align: middle;"></ion-icon>
+              Bei Abwesenheit wird Vertretung benachrichtigt
+            </p>
+          </ion-card-content>
+        </ion-card>
+      </ion-content>
+
+      <!-- FAB: Kamera -->
+      @if (scannedFiles().length > 0) {
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+          <ion-fab-button (click)="openCamera()">
+            <ion-icon name="add"></ion-icon>
+          </ion-fab-button>
+        </ion-fab>
+      }
+    </ion-tab>
+
+    <!-- Tab: Hakliste -->
+    <ion-tab tab="checklist">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Hakliste</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <ion-refresher slot="fixed" (ionRefresh)="loadWorkOrders($event)">
+          <ion-refresher-content></ion-refresher-content>
+        </ion-refresher>
+
+        <app-checklist-view></app-checklist-view>
+      </ion-content>
+    </ion-tab>
+
+    <!-- Tab: Archiv -->
+    <ion-tab tab="archive">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Archiv</ion-title>
+        </ion-toolbar>
+        
+        <!-- Toggle für Alle/Eigene anzeigen -->
+        @if (canViewAllItems()) {
+          <ion-toolbar>
+            <ion-chip 
+              [color]="showAll() ? 'primary' : 'medium'"
+              (click)="toggleShowAll()"
+              style="margin: 8px; cursor: pointer;">
+              <ion-icon [name]="showAll() ? 'eye' : 'eye-off'" slot="start"></ion-icon>
+              <ion-label>{{ showAll() ? 'Alle Einträge anzeigen' : 'Nur meine Einträge' }}</ion-label>
+            </ion-chip>
+          </ion-toolbar>
+        }
+      </ion-header>
+
+      <ion-content>
+        <ion-refresher slot="fixed" (ionRefresh)="loadWorkOrders($event)">
+          <ion-refresher-content></ion-refresher-content>
+        </ion-refresher>
+
+        <!-- Abgerechnet (billed) + Storniert (cancelled) -->
+        @if (archivedWorkOrders().length > 0) {
+          <ion-list>
+            @for (wo of archivedWorkOrders(); track wo.id) {
+              <ion-item button (click)="viewWorkOrder(wo)">
+                <ion-icon [name]="getStatusIcon(wo.status)" slot="start" [color]="getStatusColor(wo.status)"></ion-icon>
+                <ion-label>
+                  <h2>{{ wo.order_number }}</h2>
+                  <p>O-Nummer: {{ wo.object_number || 'Nicht angegeben' }}</p>
+                  <p>P-Nummer: {{ wo.project_number || 'Nicht angegeben' }}</p>
+                  @if (wo.status === 'billed') {
+                    <p>Abgerechnet: {{ formatDate(wo.reviewed_at) }}</p>
+                  } @else if (wo.status === 'cancelled') {
+                    <p>Storniert: {{ formatDate(wo.updated_at) }}</p>
+                  }
+                  @if (wo.status === 'billed' && wo.reviewed_by_details) {
+                    <p style="font-size: 0.75rem; color: var(--ion-color-medium);">
+                      von {{ wo.reviewed_by_details.first_name }} {{ wo.reviewed_by_details.last_name }}
+                    </p>
+                  }
+                </ion-label>
+                <ion-chip [color]="getStatusColor(wo.status)">
+                  <ion-icon [name]="wo.status === 'billed' ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+                  <ion-label>{{ wo.status === 'billed' ? 'Erledigt' : 'Storniert' }}</ion-label>
+                </ion-chip>
+              </ion-item>
+            }
+          </ion-list>
+        }
+
+        @if (archivedWorkOrders().length === 0) {
+          <ion-card>
+            <ion-card-content>
+              <p style="text-align: center; color: var(--ion-color-medium);">
+                Keine archivierten Arbeitsscheine
+              </p>
+            </ion-card-content>
+          </ion-card>
+        }
+      </ion-content>
+    </ion-tab>
+
+    <!-- Tab Bar -->
+    <ion-tab-bar slot="bottom">
+      <ion-tab-button tab="billing" (click)="onTabChange('billing')">
+        <ion-icon name="document-text-outline"></ion-icon>
+        <ion-label>Zur Abrechnung</ion-label>
+        @if (billingWorkOrders().length > 0) {
+          <ion-badge color="primary">{{ billingWorkOrders().length }}</ion-badge>
+        }
+      </ion-tab-button>
+
+      <ion-tab-button tab="submit" (click)="onTabChange('submit')">
+        <ion-icon name="cloud-upload-outline"></ion-icon>
+        <ion-label>Einreichen</ion-label>
+        @if (scannedFiles().length > 0) {
+          <ion-badge color="primary">{{ scannedFiles().length }}</ion-badge>
+        }
+      </ion-tab-button>
+
+      <ion-tab-button tab="checklist" (click)="onTabChange('checklist')" *ngIf="userFeatures.features()?.can_view_workorder_checklist">
+        <ion-icon name="checkbox-outline"></ion-icon>
+        <ion-label>Hakliste</ion-label>
+      </ion-tab-button>
+
+      <ion-tab-button tab="archive" (click)="onTabChange('archive')">
+        <ion-icon name="archive-outline"></ion-icon>
+        <ion-label>Archiv</ion-label>
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-content>
+
+<!-- Detail Modal -->
+<ion-modal 
+  [isOpen]="isDetailModalOpen()" 
+  (didDismiss)="onDetailModalDismiss()"
+  class="workorder-detail-modal">
+  <ng-template>
+    <app-workorder-detail-modal
+      [workOrder]="selectedWorkOrder()"
+      [isOpen]="isDetailModalOpen()"
+      (didDismiss)="onDetailModalDismiss()"
+      (workOrderUpdated)="onWorkOrderUpdated()"
+      (navigateToChat)="onNavigateToChat($event)">
+    </app-workorder-detail-modal>
+  </ng-template>
+</ion-modal>
+
+<!-- Scan Preview Modal -->
+<ion-modal 
+  [isOpen]="isPreviewModalOpen()" 
+  (didDismiss)="closePreviewModal()"
+  class="scan-preview-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ previewScan()?.file?.name || 'Scan Vorschau' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closePreviewModal()">
+            <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      @if (previewScan()?.previewUrl) {
+        <div class="preview-image-container">
+          <img [src]="previewScan()?.previewUrl || ''" alt="Scan Vorschau" class="preview-image" />
+        </div>
+      }
+    </ion-content>
+  </ng-template>
+</ion-modal>

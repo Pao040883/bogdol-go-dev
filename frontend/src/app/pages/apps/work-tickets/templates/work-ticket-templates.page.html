@@ -1,0 +1,98 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Arbeitsschein-Vorlagen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="createTemplate()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Vorlagen suchen..."
+      [value]="searchTerm"
+      (ionInput)="onSearchChanged($event)"
+      show-clear-button="focus">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-item>
+        <ion-label>Lade Vorlagen...</ion-label>
+      </ion-item>
+    </div>
+  } @else {
+    @if (filteredTemplates.length === 0) {
+      <div class="empty-state">
+        <ion-icon name="document-text" color="medium"></ion-icon>
+        <h2>Keine Vorlagen gefunden</h2>
+        <p>Erstelle deine erste Arbeitsschein-Vorlage für wiederkehrende Aufträge</p>
+        <ion-button (click)="createTemplate()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Neue Vorlage
+        </ion-button>
+      </div>
+    } @else {
+      <ion-list>
+        @for (template of filteredTemplates; track template.id) {
+          <ion-card (click)="editTemplate(template)" button>
+            <ion-card-header>
+              <div class="card-header-row">
+                <div>
+                  <ion-card-title>{{ template.name }}</ion-card-title>
+                  <p class="client-name">{{ template.client_name }}</p>
+                </div>
+                <div class="actions">
+                  <ion-button fill="clear" (click)="createWorkOrderFromTemplate(template); $event.stopPropagation()">
+                    <ion-icon slot="icon-only" name="calendar" color="primary"></ion-icon>
+                  </ion-button>
+                  <ion-button fill="clear" (click)="deleteTemplate(template, $event)">
+                    <ion-icon slot="icon-only" name="trash" color="danger"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="template-details">
+                <div class="detail-item">
+                  <ion-icon name="create" color="medium"></ion-icon>
+                  <span>{{ template.work_type }}</span>
+                </div>
+                @if (template.work_object_name) {
+                  <div class="detail-item">
+                    <ion-icon name="location" color="medium"></ion-icon>
+                    <span>{{ template.work_object_name }}</span>
+                  </div>
+                }
+                <div class="detail-item">
+                  <ion-icon name="calendar" color="medium"></ion-icon>
+                  <span>{{ template.work_days }} Tag(e)</span>
+                </div>
+              </div>
+              @if (template.description) {
+                <p class="description">{{ template.description }}</p>
+              }
+            </ion-card-content>
+          </ion-card>
+        }
+      </ion-list>
+    }
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="createTemplate()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

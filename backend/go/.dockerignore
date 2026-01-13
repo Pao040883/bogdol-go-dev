@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Test & Coverage
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files (wird separat mounted)
+.env
+.env.*
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Static files (werden beim Build generiert)
+staticfiles/
+
+# Logs
+*.log
+
+# Backup files
+*.backup
+*.bak
+
+# Documentation
+*.md
+docs/
+
+# Development files
+docker-compose*.yml
+Dockerfile*
+*.dev

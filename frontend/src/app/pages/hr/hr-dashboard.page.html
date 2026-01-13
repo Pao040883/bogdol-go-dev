@@ -1,0 +1,176 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>HR Dashboard - Genehmigte Abwesenheiten</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="doRefresh($event)" fill="clear">
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      </ion-button>
+      <ion-button (click)="exportToCSV()" fill="clear">
+        <ion-icon slot="icon-only" name="download"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Statistics Cards -->
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="4">
+        <ion-card>
+          <ion-card-content>
+            <div class="stat-card">
+              <ion-icon name="notifications" color="warning"></ion-icon>
+              <div>
+                <h2>{{ statistics().pending_hr }}</h2>
+                <p>Ausstehend</p>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      
+      <ion-col size="12" size-md="4">
+        <ion-card>
+          <ion-card-content>
+            <div class="stat-card">
+              <ion-icon name="checkmark-circle" color="success"></ion-icon>
+              <div>
+                <h2>{{ statistics().total_approved }}</h2>
+                <p>Genehmigt</p>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      
+      <ion-col size="12" size-md="4">
+        <ion-card>
+          <ion-card-content>
+            <div class="stat-card">
+              <ion-icon name="calendar" color="primary"></ion-icon>
+              <div>
+                <h2>{{ statistics().this_month }}</h2>
+                <p>Dieser Monat</p>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12" size-md="4">
+          <ion-searchbar
+            placeholder="Mitarbeiter suchen..."
+            [value]="searchTerm()"
+            (ionInput)="onSearchChanged($event)"
+            show-clear-button="focus">
+          </ion-searchbar>
+        </ion-col>
+        <ion-col size="6" size-md="3">
+          <ion-item>
+            <ion-label>Typ</ion-label>
+            <ion-select [value]="selectedType()" (ionChange)="onTypeFilterChanged($event)">
+              <ion-select-option value="all">Alle</ion-select-option>
+              <ion-select-option value="vacation">Urlaub</ion-select-option>
+              <ion-select-option value="sick_leave">Krankheit</ion-select-option>
+              <ion-select-option value="special_leave">Sonderurlaub</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+        <ion-col size="6" size-md="3">
+          <ion-item>
+            <ion-label>Monat</ion-label>
+            <input 
+              type="month" 
+              [value]="selectedMonth()" 
+              (change)="onMonthFilterChanged($event)"
+              class="month-picker">
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <!-- Loading Indicator -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-item>
+        <ion-label>Lade Daten...</ion-label>
+      </ion-item>
+    </div>
+  }
+
+  <!-- Absence List -->
+  @if (!isLoading()) {
+    @if (filteredAbsences().length === 0) {
+      <ion-card>
+        <ion-card-content>
+          <div class="empty-state">
+            <ion-icon name="checkmark-circle" color="success"></ion-icon>
+            <h3>Keine Abwesenheiten gefunden</h3>
+            <p>Für die gewählten Filter wurden keine genehmigten Abwesenheiten gefunden.</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    } @else {
+      @for (absence of filteredAbsences(); track absence.id) {
+        <ion-card class="absence-card">
+          <ion-card-content>
+            <div class="absence-header">
+              <div class="absence-user">
+                <ion-icon 
+                  [name]="getTypeIcon(absence.absence_type.name)" 
+                  [color]="getTypeColor(absence.absence_type.name)"
+                  class="type-icon">
+                </ion-icon>
+                <div>
+                  <h2>{{ getUserDisplayName(absence) }}</h2>
+                  <p class="absence-type">{{ absence.absence_type.display_name }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="absence-details">
+              <div class="detail-item">
+                <ion-icon name="calendar" color="medium"></ion-icon>
+                <span>{{ formatDateRange(absence.start_date, absence.end_date) }}</span>
+              </div>
+              <div class="detail-item">
+                <ion-icon name="time" color="medium"></ion-icon>
+                <span>{{ getDurationText(absence) }}</span>
+              </div>
+              @if (absence.representative) {
+                <div class="detail-item">
+                  <ion-icon name="person" color="medium"></ion-icon>
+                  <span>Vertretung: {{ getUserDisplayNameFromUser(absence.representative) }}</span>
+                </div>
+              }
+            </div>
+          </ion-card-content>
+        </ion-card>
+      }
+    }
+  }
+
+  <!-- Toast Message -->
+  <ion-toast
+    [isOpen]="showToast()"
+    [message]="toastMessage()"
+    duration="3000"
+    position="bottom"
+    (didDismiss)="showToast.set(false)">
+  </ion-toast>
+</ion-content>

@@ -1,0 +1,57 @@
+asgiref==3.9.0
+certifi==2025.8.3
+charset-normalizer==3.4.3
+Django==5.0.9
+django-cors-headers==4.7.0
+django-filter==25.1
+django-guardian==3.0.3
+djangorestframework==3.16.0
+djangorestframework_simplejwt==5.5.0
+idna==3.10
+Markdown==3.8.2
+pillow==11.3.0
+psycopg==3.2.9
+psycopg-binary==3.2.9
+PyJWT==2.9.0
+requests==2.32.5
+rules==3.5
+sqlparse==0.5.3
+tzdata==2025.2
+urllib3==2.5.0
+
+# Celery & Redis
+celery==5.3.4
+redis==5.0.1
+django-celery-beat==2.6.0
+django-celery-results==2.5.1
+django-redis==5.4.0
+flower==2.0.1
+
+# WebSockets & RealTime
+channels==4.0.0
+channels-redis==4.1.0
+daphne==4.0.0
+
+# KI & Embeddings
+numpy>=1.24.0
+sentence-transformers>=2.2.0
+rapidfuzz>=3.0.0  # Fuzzy string matching
+
+# Docker/Production
+dj-database-url==2.1.0
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Monitoring & Logging
+sentry-sdk[django]==1.38.0
+django-extensions==3.2.3
+
+# File handling & Utils
+python-magic==0.4.27
+python-decouple==3.8
+openpyxl==3.1.2
+pandas==2.2.0
+PyPDF2==3.0.1
+
+# Development Tools
+django-debug-toolbar==4.2.0

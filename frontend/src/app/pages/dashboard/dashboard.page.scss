@@ -1,0 +1,185 @@
+// Dashboard Grid - Masonry Layout für flüssiges Ineinandergreifen
+ion-grid {
+  @media (min-width: 992px) {
+    ion-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start; // Items oben ausrichten
+      
+      ion-col {
+        display: flex;
+        
+        ion-card {
+          width: 100%;
+          margin-bottom: 1rem;
+        }
+      }
+    }
+  }
+}
+
+// Dashboard Card Styles - Nicht mehr anklickbar
+ion-card {
+  margin: 0.5rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+}
+
+// Card Subtitles
+ion-card-subtitle {
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+// Icon Spacing in Card Titles
+ion-card-title ion-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+  font-size: 1.2rem;
+}
+
+// Dashboard Item Styling - Diese sind anklickbar
+.dashboard-item {
+  --background: transparent;
+  --border-color: var(--ion-color-light);
+  margin-bottom: 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    --background: var(--ion-color-light);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  ion-label h3 {
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    margin-bottom: 2px;
+  }
+  
+  ion-label p {
+    color: var(--ion-color-medium);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+  
+  ion-icon[slot="start"] {
+    font-size: 1.5rem;
+    margin-right: 12px;
+  }
+  
+  ion-icon[slot="end"] {
+    font-size: 1rem;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+  }
+  
+  &:hover ion-icon[slot="end"] {
+    opacity: 1;
+  }
+}
+
+// Action Button Styling - Diese sind auch anklickbar
+.action-button {
+  --border-radius: 12px;
+  margin: 12px 0 4px 0;
+  height: 48px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  ion-icon {
+    font-size: 1.2rem;
+    margin-right: 8px;
+  }
+}
+
+// List Styling
+ion-list {
+  background: transparent;
+  padding: 0;
+  
+  &:last-child .dashboard-item:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Quick Actions Styling
+.quick-actions {
+  ion-button {
+    height: 60px;
+    font-size: 0.9rem;
+    --border-radius: 12px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    ion-icon {
+      font-size: 1.2rem;
+      margin-right: 6px;
+    }
+  }
+}
+
+// Responsive Grid
+ion-grid {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  ion-grid {
+    padding: 0.5rem;
+  }
+  
+  ion-card {
+    margin-bottom: 1rem;
+  }
+  
+  ion-card-title {
+    font-size: 1.1rem;
+  }
+  
+  .dashboard-item {
+    &:hover {
+      transform: none; // Weniger Animation auf Mobile
+    }
+  }
+  
+  .action-button {
+    height: 44px;
+    font-size: 0.9rem;
+  }
+}
+
+// Widget Cards
+ion-card {
+  margin: 0.5rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+  }
+}

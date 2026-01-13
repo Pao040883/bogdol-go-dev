@@ -1,0 +1,163 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Chat & Nachrichten</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Status Section -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Mein Status</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-segment [(ngModel)]="currentStatus" (ionChange)="updateStatus()">
+        <ion-segment-button value="online">
+          <ion-label>🟢 Online</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="away">
+          <ion-label>🟡 Abwesend</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="busy">
+          <ion-label>🔴 Beschäftigt</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+      
+      <ion-item lines="none">
+        <ion-input 
+          [(ngModel)]="statusMessage" 
+          placeholder="Status-Nachricht (optional)"
+          (ionChange)="updateStatus()">
+        </ion-input>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- All Users (Online & Offline) -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="people-outline"></ion-icon>
+        Kontakte
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-accordion-group>
+        <!-- Online Users Accordion -->
+        <ion-accordion value="online" [toggleIconSlot]="'start'">
+          <ion-item slot="header" color="light">
+            <ion-label>
+              <h3>🟢 Online ({{ onlineUsers.length }})</h3>
+            </ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            @for (user of onlineUsers; track user.username) {
+              <ion-item>
+                <ion-icon 
+                  [name]="getStatusIcon(user.status)" 
+                  [color]="getStatusColor(user.status)"
+                  slot="start">
+                </ion-icon>
+                <ion-label>
+                  <h3>{{ user.full_name }}</h3>
+                  <p>{{ user.status_message || user.status }}</p>
+                </ion-label>
+                <ion-button fill="clear" slot="end" (click)="startChatWithUser(user.username)">
+                  <ion-icon name="chatbubble-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            }
+            @if (onlineUsers.length === 0) {
+              <ion-item>
+                <ion-label color="medium">Keine Benutzer online</ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-accordion>
+
+        <!-- Offline Users Accordion -->
+        <ion-accordion value="offline" [toggleIconSlot]="'start'">
+          <ion-item slot="header" color="light">
+            <ion-label>
+              <h3>⚫ Offline ({{ offlineUsers.length }})</h3>
+            </ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            @for (user of offlineUsers; track user.username) {
+              <ion-item>
+                <ion-icon 
+                  name="ellipse-outline"
+                  color="medium"
+                  slot="start">
+                </ion-icon>
+                <ion-label>
+                  <h3>{{ user.full_name }}</h3>
+                  <p class="text-muted">Offline</p>
+                </ion-label>
+                <ion-button fill="clear" slot="end" (click)="startChatWithUser(user.username)">
+                  <ion-icon name="chatbubble-outline"></ion-icon>
+                </ion-button>
+              </ion-item>
+            }
+            @if (offlineUsers.length === 0) {
+              <ion-item>
+                <ion-label color="medium">Alle Benutzer sind online</ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-accordion>
+      </ion-accordion-group>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Conversations -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="chatbubbles-outline"></ion-icon>
+        Meine Konversationen
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      @if (isLoading) {
+        <p>Lade Konversationen...</p>
+      } @else {
+        <ion-list>
+          @for (conv of conversations; track conv.id) {
+            <ion-item-sliding #slidingItem>
+              <ion-item button (click)="openConversation(conv.id)">
+                <ion-label>
+                  <h3>
+                    <span class="online-indicator" [class.online]="isUserOnline(conv)"></span>
+                    {{ getConversationTitle(conv) }}
+                    @if (hasInactiveParticipant(conv)) {
+                      <ion-badge color="warning" style="margin-left: 8px;">Inaktiv</ion-badge>
+                    }
+                  </h3>
+                  <p>{{ getLastMessageText(conv) }}</p>
+                </ion-label>
+                @if ((conv.unread_count ?? 0) > 0) {
+                  <ion-badge color="danger" slot="end">{{ conv.unread_count }}</ion-badge>
+                }
+              </ion-item>
+              
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="deleteConversation(conv, slidingItem)">
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          }
+          @if (conversations.length === 0) {
+            <ion-item>
+              <ion-label color="medium">Keine Konversationen vorhanden</ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    </ion-card-content>
+  </ion-card>
+</ion-content>

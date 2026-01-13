@@ -1,0 +1,19 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Externe Links</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <app-tile-grid 
+    [tiles]="externalLinkTiles"
+    [colSizeXs]="12"
+    [colSizeSm]="6"
+    [colSizeMd]="6"
+    [colSizeLg]="4"
+    [colSizeXl]="2">
+  </app-tile-grid>
+</ion-content>

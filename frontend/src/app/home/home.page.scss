@@ -1,0 +1,18 @@
+ion-split-pane {
+  --side-width: 2800px;
+  --side-max-width: 280px;
+
+  --border: 1px dashed #b3baff;
+}
+
+.go-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .go-logo {
+    width: 150px;
+    object-fit: cover;
+    margin: 16px 0;
+  }
+}

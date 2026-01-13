@@ -1,0 +1,24 @@
+.online-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--ion-color-medium);
+  margin-right: 8px;
+  
+  &.online {
+    background-color: var(--ion-color-success);
+  }
+}
+
+ion-card {
+  margin: 1rem;
+}
+
+ion-segment {
+  margin-bottom: 1rem;
+}
+
+.status-icon {
+  font-size: 1.2rem;
+}

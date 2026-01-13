@@ -1,0 +1,41 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+ion-header {
+  flex-shrink: 0;
+}
+
+ion-content {
+  flex: 1;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-footer {
+  flex-shrink: 0;
+}
+
+.pdf-container {
+  height: 100%;
+  width: 100%;
+  
+  ::ng-deep ngx-extended-pdf-viewer {
+    height: 100%;
+  }
+}
+
+.footer-buttons {
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.chat-popover {
+  --width: 800px;
+  --max-width: 90vw;
+}

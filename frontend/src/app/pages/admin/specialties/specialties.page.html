@@ -1,0 +1,94 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Fachbereiche verwalten</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateModal()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filter Toolbar -->
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionChange)="onSearchChange()"
+      placeholder="Fachbereich suchen..."
+      debounce="300">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Lade Fachbereiche...</p>
+  </div>
+
+  <!-- Specialty List -->
+  <ion-list *ngIf="!isLoading()">
+    <ion-item-group *ngFor="let dept of departments()">
+      <ion-item-divider sticky>
+        <ion-label>{{ dept.name }}</ion-label>
+      </ion-item-divider>
+
+      <ion-item
+        *ngFor="let specialty of filteredSpecialties() | filterByDepartment: dept.id"
+        [class.inactive]="!specialty.is_active">
+        
+        <ion-icon
+          slot="start"
+          [name]="specialty.parent ? 'arrow-forward' : 'bookmark'"
+          [color]="specialty.is_active ? 'primary' : 'medium'">
+        </ion-icon>
+
+        <ion-label>
+          <h2>
+            <strong>{{ specialty.name }}</strong>
+            <ion-badge color="medium" class="code-badge">{{ specialty.code }}</ion-badge>
+            <ion-badge *ngIf="!specialty.is_active" color="danger">Inaktiv</ion-badge>
+          </h2>
+          <p *ngIf="specialty.description">{{ specialty.description }}</p>
+          <p class="specialty-path" *ngIf="specialty.full_path">
+            <ion-icon name="git-branch-outline" size="small"></ion-icon>
+            {{ specialty.full_path }}
+          </p>
+        </ion-label>
+
+        <ion-buttons slot="end">
+          <ion-button (click)="viewMembers(specialty)" fill="clear" size="small">
+            <ion-icon slot="icon-only" name="people-outline"></ion-icon>
+          </ion-button>
+          <ion-button (click)="openEditModal(specialty)" fill="clear" size="small">
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-button>
+          <ion-button (click)="deleteSpecialty(specialty)" fill="clear" color="danger" size="small">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+    </ion-item-group>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredSpecialties().length === 0" class="empty-state">
+      <ion-icon name="folder-open-outline" size="large" color="medium"></ion-icon>
+      <h3>Keine Fachbereiche gefunden</h3>
+      <p>Erstellen Sie einen neuen Fachbereich</p>
+      <ion-button (click)="openCreateModal()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Fachbereich erstellen
+      </ion-button>
+    </div>
+  </ion-list>
+
+  <!-- FAB -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openCreateModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

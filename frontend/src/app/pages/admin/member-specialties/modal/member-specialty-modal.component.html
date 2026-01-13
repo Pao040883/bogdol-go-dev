@@ -1,0 +1,173 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      {{ mode === 'create' ? 'Fachbereich zuordnen' : 'Fachbereich bearbeiten' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="isSaving()">
+        <strong>Speichern</strong>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form>
+    <ion-list>
+      <!-- Specialty Selection -->
+      <ion-item>
+        <ion-label position="stacked">Fachbereich <ion-text color="danger">*</ion-text></ion-label>
+        <ion-select
+          [value]="formData().specialty"
+          (ionChange)="updateFormField('specialty', $event.detail.value)"
+          placeholder="Fachbereich wählen"
+          interface="popover"
+          [disabled]="mode === 'edit'">
+          <ion-select-option *ngFor="let specialty of specialties()" [value]="specialty.id">
+            {{ specialty.name }} ({{ specialty.code }})
+          </ion-select-option>
+        </ion-select>
+        <ion-note slot="helper" *ngIf="mode === 'edit'">
+          Fachbereich kann nach Erstellung nicht geändert werden
+        </ion-note>
+      </ion-item>
+
+      <!-- Proficiency Level -->
+      <ion-item>
+        <ion-label position="stacked">Kompetenzstufe</ion-label>
+        <ion-select
+          [value]="formData().proficiency_level"
+          (ionChange)="updateFormField('proficiency_level', $event.detail.value)"
+          interface="popover">
+          <ion-select-option *ngFor="let level of proficiencyLevels" [value]="level.value">
+            <ion-icon [name]="level.icon"></ion-icon>
+            {{ level.label }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Proficiency Level Visual -->
+      <ion-item lines="none">
+        <div class="proficiency-visual">
+          <div
+            *ngFor="let level of proficiencyLevels"
+            class="proficiency-step"
+            [class.active]="(formData().proficiency_level ?? 0) >= level.value">
+            <ion-icon [name]="level.icon"></ion-icon>
+            <span>{{ level.label }}</span>
+          </div>
+        </div>
+      </ion-item>
+
+      <!-- Primary -->
+      <ion-item>
+        <ion-label>
+          <h2>Als primären Fachbereich markieren</h2>
+          <p>Der primäre Fachbereich wird prominent angezeigt</p>
+        </ion-label>
+        <ion-toggle
+          slot="end"
+          [checked]="formData().is_primary"
+          (ionChange)="updateFormField('is_primary', $event.detail.checked)">
+        </ion-toggle>
+      </ion-item>
+
+      <!-- Valid From -->
+      <ion-item>
+        <ion-label position="stacked">Gültig ab</ion-label>
+        <ion-datetime-button datetime="valid-from"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="valid-from"
+              [value]="formData().valid_from"
+              (ionChange)="updateFormField('valid_from', $event.detail.value)"
+              presentation="date"
+              [showDefaultButtons]="true">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+        <ion-button
+          *ngIf="formData().valid_from"
+          fill="clear"
+          size="small"
+          slot="end"
+          (click)="updateFormField('valid_from', null)">
+          <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <!-- Valid Until -->
+      <ion-item>
+        <ion-label position="stacked">Gültig bis</ion-label>
+        <ion-datetime-button datetime="valid-until"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="valid-until"
+              [value]="formData().valid_until"
+              (ionChange)="updateFormField('valid_until', $event.detail.value)"
+              presentation="date"
+              [showDefaultButtons]="true"
+              [min]="formData().valid_from">
+            </ion-datetime>
+          </ng-template>
+        </ion-modal>
+        <ion-button
+          *ngIf="formData().valid_until"
+          fill="clear"
+          size="small"
+          slot="end"
+          (click)="updateFormField('valid_until', null)">
+          <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <!-- Notes -->
+      <ion-item>
+        <ion-label position="stacked">Notizen</ion-label>
+        <ion-textarea
+          [value]="formData().notes"
+          (ionInput)="updateFormField('notes', $event.detail.value)"
+          placeholder="Zusätzliche Informationen..."
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+
+      <!-- Active Status -->
+      <ion-item>
+        <ion-label>Aktiv</ion-label>
+        <ion-toggle
+          slot="end"
+          [checked]="formData().is_active"
+          (ionChange)="updateFormField('is_active', $event.detail.checked)">
+        </ion-toggle>
+      </ion-item>
+    </ion-list>
+  </form>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="isSaving()" class="loading-overlay">
+    <ion-spinner></ion-spinner>
+    <p>Speichert...</p>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="cancel()">Abbrechen</ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="solid" color="primary" (click)="save()" [disabled]="isSaving()">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        Speichern
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

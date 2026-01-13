@@ -1,0 +1,180 @@
+.absence-details-card {
+  margin: 16px;
+  
+  ion-card-title {
+    h2 {
+      margin: 0;
+      color: var(--ion-color-primary);
+    }
+  }
+  
+  ion-icon[size="large"] {
+    font-size: 2.5rem;
+    color: var(--ion-color-primary);
+  }
+}
+
+.comments-card {
+  margin: 16px;
+  
+  .comment-form {
+    margin-bottom: 16px;
+    
+    ion-item {
+      margin-bottom: 8px;
+    }
+    
+    ion-textarea {
+      --background: var(--ion-color-light);
+      border-radius: 8px;
+    }
+  }
+}
+
+.comments-list {
+  .loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .no-comments {
+    text-align: center;
+    padding: 32px;
+  }
+  
+  .comment-item {
+    margin-bottom: 8px;
+    
+    ion-item {
+      --background: var(--ion-color-light);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    
+    ion-avatar {
+      --background: var(--ion-color-primary);
+      
+      ion-icon {
+        color: white;
+        font-size: 1.2rem;
+      }
+    }
+    
+    .comment-type-chip {
+      margin-left: 8px;
+      font-size: 0.75rem;
+    }
+    
+    .comment-content {
+      white-space: pre-wrap;
+      line-height: 1.4;
+      margin: 8px 0;
+    }
+    
+    ion-note {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.ion-color-primary {
+  --ion-color-base: var(--ion-color-primary);
+  --ion-color-base-rgb: var(--ion-color-primary-rgb);
+  --ion-color-contrast: var(--ion-color-primary-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-primary-contrast-rgb);
+  --ion-color-shade: var(--ion-color-primary-shade);
+  --ion-color-tint: var(--ion-color-primary-tint);
+}
+
+.ion-color-secondary {
+  --ion-color-base: var(--ion-color-secondary);
+  --ion-color-base-rgb: var(--ion-color-secondary-rgb);
+  --ion-color-contrast: var(--ion-color-secondary-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-secondary-contrast-rgb);
+  --ion-color-shade: var(--ion-color-secondary-shade);
+  --ion-color-tint: var(--ion-color-secondary-tint);
+}
+
+.ion-color-tertiary {
+  --ion-color-base: var(--ion-color-tertiary);
+  --ion-color-base-rgb: var(--ion-color-tertiary-rgb);
+  --ion-color-contrast: var(--ion-color-tertiary-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-tertiary-contrast-rgb);
+  --ion-color-shade: var(--ion-color-tertiary-shade);
+  --ion-color-tint: var(--ion-color-tertiary-tint);
+}
+
+.ion-color-success {
+  --ion-color-base: var(--ion-color-success);
+  --ion-color-base-rgb: var(--ion-color-success-rgb);
+  --ion-color-contrast: var(--ion-color-success-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-success-contrast-rgb);
+  --ion-color-shade: var(--ion-color-success-shade);
+  --ion-color-tint: var(--ion-color-success-tint);
+}
+
+.ion-color-warning {
+  --ion-color-base: var(--ion-color-warning);
+  --ion-color-base-rgb: var(--ion-color-warning-rgb);
+  --ion-color-contrast: var(--ion-color-warning-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-warning-contrast-rgb);
+  --ion-color-shade: var(--ion-color-warning-shade);
+  --ion-color-tint: var(--ion-color-warning-tint);
+}
+
+.ion-color-danger {
+  --ion-color-base: var(--ion-color-danger);
+  --ion-color-base-rgb: var(--ion-color-danger-rgb);
+  --ion-color-contrast: var(--ion-color-danger-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-danger-contrast-rgb);
+  --ion-color-shade: var(--ion-color-danger-shade);
+  --ion-color-tint: var(--ion-color-danger-tint);
+}
+
+.ion-color-medium {
+  --ion-color-base: var(--ion-color-medium);
+  --ion-color-base-rgb: var(--ion-color-medium-rgb);
+  --ion-color-contrast: var(--ion-color-medium-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-medium-contrast-rgb);
+  --ion-color-shade: var(--ion-color-medium-shade);
+  --ion-color-tint: var(--ion-color-medium-tint);
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .absence-details-card,
+  .comments-card {
+    margin: 8px;
+  }
+  
+  .comment-item {
+    ion-avatar {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .comment-type-chip {
+      display: block;
+      margin: 4px 0;
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .comment-item {
+    ion-item {
+      --background: var(--ion-color-dark);
+    }
+  }
+  
+  .comment-form {
+    ion-textarea {
+      --background: var(--ion-color-dark);
+    }
+  }
+}

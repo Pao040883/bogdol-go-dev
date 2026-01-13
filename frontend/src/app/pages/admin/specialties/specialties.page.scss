@@ -1,0 +1,89 @@
+:host {
+  ion-content {
+    --background: var(--ion-color-light);
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+.code-badge {
+  margin-left: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+}
+
+.specialty-path {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--ion-color-medium);
+  font-style: italic;
+  margin-top: 0.25rem;
+
+  ion-icon {
+    flex-shrink: 0;
+  }
+}
+
+ion-item.inactive {
+  --background: var(--ion-color-light-shade);
+  opacity: 0.6;
+
+  ion-label {
+    h2 {
+      text-decoration: line-through;
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+  padding: 2rem;
+
+  ion-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin: 1rem 0 0.5rem 0;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 2rem;
+  }
+}
+
+ion-item-divider {
+  font-weight: 600;
+  --background: var(--ion-color-light-tint);
+  --color: var(--ion-color-dark);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+ion-buttons {
+  ion-button {
+    --padding-start: 0.5rem;
+    --padding-end: 0.5rem;
+  }
+}

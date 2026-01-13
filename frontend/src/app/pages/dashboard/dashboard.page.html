@@ -1,0 +1,329 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-grid>
+    <!-- Willkommen Bereich -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="home-outline"></ion-icon>
+              Willkommen im GO System
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <p>Zentrale Übersicht über alle verfügbaren Funktionen und Services</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Hauptfunktionen -->
+    @if (!hasAnyPermission()) {
+      <!-- Keine Berechtigungen Hinweis -->
+      <ion-row>
+        <ion-col size="12">
+          <ion-card color="warning">
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="lock-closed-outline"></ion-icon>
+                Keine Berechtigungen
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Sie haben derzeit keine Berechtigungen für diese Anwendung.</p>
+              <p>Bitte kontaktieren Sie Ihren Administrator, um Zugang zu den gewünschten Funktionen zu erhalten.</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    }
+    @if (hasAnyPermission()) {
+    <ion-row>
+      <!-- Apps Section -->
+      @if (hasAnyAppPermission()) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="apps-outline" color="primary"></ion-icon>
+              Anwendungen
+            </ion-card-title>
+            <ion-card-subtitle>Verfügbare Geschäftsanwendungen</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              @if (userFeatures.features()?.can_view_sofo) {
+                <ion-item [routerLink]="['/apps/sofo']" button class="dashboard-item">
+                <ion-icon name="alert-circle-outline" slot="start" color="warning"></ion-icon>
+                <ion-label>
+                  <h3>Sofortmeldungen</h3>
+                  <p>Wichtige Ereignisse melden</p>
+                </ion-label>
+                @if ((badgeService.getBadge('sofortmeldungen') | async); as sofoMeldungBadge) {
+                  @if (sofoMeldungBadge > 0) {
+                    <ion-badge color="danger" slot="end">{{ sofoMeldungBadge }}</ion-badge>
+                  }
+                }
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              }
+              @if (userFeatures.features()?.can_view_workorders) {
+              <ion-item [routerLink]="['/apps/workorders']" button class="dashboard-item">
+                <ion-icon name="document-text-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Arbeitsscheine</h3>
+                  <p>Faktur-Verwaltung</p>
+                </ion-label>
+                @if ((badgeService.getBadge('arbeitsscheine') | async); as arbeitsBadge) {
+                  @if (arbeitsBadge > 0) {
+                    <ion-badge color="danger" slot="end">{{ arbeitsBadge }}</ion-badge>
+                  }
+                }
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              }
+               @if (userFeatures.features()?.can_view_contacts) {
+              <ion-item [routerLink]="['/apps/contacts-list']" button class="dashboard-item">
+                <ion-icon name="people-outline" slot="start" color="tertiary"></ion-icon>
+                <ion-label>
+                  <h3>Kontakte</h3>
+                  <p>Adressbuch verwalten</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              }
+              @if (userFeatures.features()?.can_view_absences) {
+              <ion-item [routerLink]="['/apps/absences']" button class="dashboard-item">
+                <ion-icon name="calendar-outline" slot="start" color="success"></ion-icon>
+                <ion-label>
+                  <h3>Abwesenheiten</h3>
+                  <p>Urlaubsplanung</p>
+                </ion-label>
+                @if ((badgeService.getBadge('absences') | async); as absenceBadge) {
+                  @if (absenceBadge > 0) {
+                    <ion-badge color="danger" slot="end">{{ absenceBadge }}</ion-badge>
+                  }
+                }
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              }
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+
+      <!-- Intranet Section -->
+      @if (hasAnyIntranetPermission()) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="business-outline" color="primary"></ion-icon>
+              Intranet
+            </ion-card-title>
+            <ion-card-subtitle>Kommunikation & Organisation</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              @if (userFeatures.features()?.can_view_chat) {
+              <ion-item [routerLink]="['/chat']" button class="dashboard-item">
+                <ion-icon name="chatbubbles-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Chat & Nachrichten</h3>
+                  <p>Echtzeitkommunikation</p>
+                </ion-label>
+                @if ((badgeService.getBadge('chat') | async); as chatBadge) {
+                  @if (chatBadge > 0) {
+                    <ion-badge color="danger" slot="end">{{ chatBadge }}</ion-badge>
+                  }
+                }
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              }
+              @if (userFeatures.features()?.can_view_organigramm) {
+              <ion-item [routerLink]="['/apps/organigramm']" button class="dashboard-item">
+                <ion-icon name="git-network-outline" slot="start" color="secondary"></ion-icon>
+                <ion-label>
+                  <h3>Organigramm</h3>
+                  <p>Unternehmensstruktur</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              }
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+
+      <!-- Auswertungen Section -->
+      @if (userFeatures.features()?.can_view_analytics) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="analytics-outline" color="primary"></ion-icon>
+              Auswertungen
+            </ion-card-title>
+            <ion-card-subtitle>Analysen & Berichte</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item [routerLink]="['/auswertungen']" button class="dashboard-item">
+                <ion-icon name="stats-chart-outline" slot="start" color="success"></ion-icon>
+                <ion-label>
+                  <h3>Blink Service Manager</h3>
+                  <p>Geschäftsanalysen</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+
+      <!-- Admin Section -->
+      @if (userFeatures.features()?.can_view_admin) {
+      <ion-col size="12" size-md="6" size-lg="8">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="settings-outline" color="primary"></ion-icon>
+              Administration
+            </ion-card-title>
+            <ion-card-subtitle>System-Verwaltung</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item [routerLink]="['/admin/users']" button class="dashboard-item">
+                <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Benutzer</h3>
+                  <p>Benutzerverwaltung</p>
+                </ion-label>
+                @if ((badgeService.getBadge('users') | async); as userBadge) {
+                  @if (userBadge > 0) {
+                    <ion-badge color="danger" slot="end">{{ userBadge }}</ion-badge>
+                  }
+                }
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item [routerLink]="['/admin/companies']" button class="dashboard-item">
+                <ion-icon name="briefcase-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Gesellschaften</h3>
+                  <p>Firmenverwaltung</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item [routerLink]="['/admin/departments']" button class="dashboard-item">
+                <ion-icon name="business-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Abteilungen</h3>
+                  <p>Strukturverwaltung</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item [routerLink]="['/admin/roles']" button class="dashboard-item">
+                <ion-icon name="people-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Rollen</h3>
+                  <p>Rollenverwaltung</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item [routerLink]="['/admin/absence-types']" button class="dashboard-item">
+                <ion-icon name="calendar-outline" slot="start" color="success"></ion-icon>
+                <ion-label>
+                  <h3>Abwesenheitsarten</h3>
+                  <p>Verwaltung</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item [routerLink]="['/admin/specialties']" button class="dashboard-item">
+                <ion-icon name="school-outline" slot="start" color="tertiary"></ion-icon>
+                <ion-label>
+                  <h3>Fachbereiche</h3>
+                  <p>Kompetenzverwaltung</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item [routerLink]="['/admin/search-analytics']" button class="dashboard-item">
+                <ion-icon name="analytics-outline" slot="start" color="warning"></ion-icon>
+                <ion-label>
+                  <h3>KI-Training</h3>
+                  <p>Such-Analytics & Optimierung</p>
+                </ion-label>
+                <ion-icon name="chevron-forward-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+
+      <!-- External Links -->
+      @if (userFeatures.features()?.can_view_external_links) {
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="link-outline" color="primary"></ion-icon>
+              Externe Links
+            </ion-card-title>
+            <ion-card-subtitle>Externe Services</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              <ion-item href="https://bogdol.blink.online" target="_blank" button class="dashboard-item">
+                <ion-icon name="time-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h3>Zeiterfassung</h3>
+                  <p>Personal</p>
+                </ion-label>
+                <ion-icon name="open-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item href="https://ich-reinige.de" target="_blank" button class="dashboard-item">
+                <ion-icon name="person-add-outline" slot="start" color="secondary"></ion-icon>
+                <ion-label>
+                  <h3>Jobportal</h3>
+                  <p>Personal</p>
+                </ion-label>
+                <ion-icon name="open-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item href="https://bogdol-check.blink.online/" target="_blank" button class="dashboard-item">
+                <ion-icon name="checkbox-outline" slot="start" color="success"></ion-icon>
+                <ion-label>
+                  <h3>Qualität</h3>
+                  <p>Betrieb</p>
+                </ion-label>
+                <ion-icon name="open-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+              <ion-item href="https://bogdol.keelearning.de/" target="_blank" button class="dashboard-item">
+                <ion-icon name="book-outline" slot="start" color="tertiary"></ion-icon>
+                <ion-label>
+                  <h3>E-Learning</h3>
+                  <p>Personal</p>
+                </ion-label>
+                <ion-icon name="open-outline" slot="end" color="medium"></ion-icon>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      }
+    </ion-row>
+    }
+  </ion-grid>
+</ion-content>

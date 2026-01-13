@@ -1,0 +1,27 @@
+ion-list {
+  --ion-item-background: #4bb5e7;
+
+  ion-item {
+    --padding-start: 32px;
+
+    .nav-badge {
+      padding: 6px 10px;
+      border-radius: 50%;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      -ms-border-radius: 50%;
+      -o-border-radius: 50%;
+    }
+
+    &:hover {
+      font-weight: bold;
+    }
+
+    &:hover > ion-icon {
+      font-size: 1.6em;
+    }
+  }
+}

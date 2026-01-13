@@ -1,0 +1,306 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Sichere Auswertungen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Header Card -->
+  <ion-card class="header-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="analytics-outline"></ion-icon>
+        Blink Service Manager Auswertungen (Secure Backend)
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <app-tile-grid
+        [tiles]="actionTiles()"
+        [colSizeXs]="12"
+        [colSizeSm]="6"
+        [colSizeMd]="3"
+        [colSizeLg]="3"
+        (tileClick)="onTileClick($event)"
+      ></app-tile-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+  <div class="loading-container">
+    <ion-card>
+      <ion-card-content class="text-center">
+        <ion-spinner name="crescent" color="primary"></ion-spinner>
+        <h3>Sichere Daten werden abgerufen...</h3>
+        <p>Auswertung wird über Backend-Proxy ausgeführt</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  }
+
+  <!-- Results Display -->
+  @if (currentResult() && !isLoading()) {
+  <div>
+    <!-- Summary Cards -->
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12" size-md="3">
+          <ion-card class="summary-card">
+            <ion-card-content class="text-center">
+              <ion-icon name="people-outline" color="primary"></ion-icon>
+              <h2>{{ currentResult()?.summary?.totalManagers || 0 }}</h2>
+              <p>Service Manager</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-md="3">
+          <ion-card class="summary-card">
+            <ion-card-content class="text-center">
+              <ion-icon name="location-outline" color="secondary"></ion-icon>
+              <h2>{{ currentResult()?.summary?.totalLocations || 0 }}</h2>
+              <p>Standorte</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-md="3">
+          <ion-card class="summary-card">
+            <ion-card-content class="text-center">
+              <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+              <h2>{{ currentResult()?.summary?.completedLocations || 0 }}</h2>
+              <p>Vollständige Standorte</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-md="3">
+          <ion-card class="summary-card">
+            <ion-card-content class="text-center">
+              <ion-icon name="trending-up-outline" color="success"></ion-icon>
+              <h2>{{ currentResult()?.summary?.overallExportPercentage?.toFixed(1) || 0 }}%</h2>
+              <p>Standort-Export Rate</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Service Manager Accordion (wie Blink Material) -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Service Manager Details</ion-card-title>
+        <ion-card-subtitle>{{ getFilteredManagers().length }} Service Manager gefunden</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        
+        <!-- Filter und Suche -->
+        <ion-searchbar 
+          [value]="searchTerm()"
+          (ionInput)="onSearchInput($event)"
+          placeholder="Service Manager suchen...">
+        </ion-searchbar>
+        
+        <!-- Service Manager Accordion -->
+        <ion-accordion-group>
+          @for (manager of getFilteredManagers(); track manager.id) {
+          <ion-accordion>
+            <!-- Accordion Header - Service Manager Übersicht -->
+            <ion-item slot="header" color="light">
+              <ion-label>
+                <h2>{{ manager.fullName }}</h2>
+                <p>
+                  <strong>{{ manager.statistics?.uniqueLocations || 0 }}</strong> Standorte • 
+                  <strong>{{ manager.statistics?.totalWorklogs || 0 }}</strong> Worklogs •
+                  <strong>{{ manager.statistics?.exportedWorklogs || 0 }}</strong> exportiert
+                </p>
+                <p class="export-details">
+                  {{ (manager.statistics?.exportedWorklogs || 0) }} von {{ (manager.statistics?.totalWorklogs || 0) }} Worklogs bearbeitet
+                </p>
+              </ion-label>
+              <ion-badge 
+                slot="end" 
+                [color]="getPerformanceColor(manager.statistics?.exportPercentage ?? 0)">
+                {{ (manager.statistics?.exportPercentage ?? 0).toFixed(1) }}%
+              </ion-badge>
+            </ion-item>
+            
+            <!-- Accordion Content - Location Details -->
+            <div class="ion-padding" slot="content">
+              @if (manager.locations && manager.locations.length > 0) {
+              <ion-card>
+                <ion-card-header>
+                  <ion-card-subtitle>
+                    <ion-icon name="location-outline"></ion-icon>
+                    Standorte von {{ manager.fullName }}
+                  </ion-card-subtitle>
+                </ion-card-header>
+                <ion-card-content>
+                  
+                  <!-- Location Liste -->
+                  <ion-list>
+                    @for (location of manager.locations; track location.Name) {
+                    <ion-item>
+                      <ion-label>
+                        <h3>{{ location.Name }}</h3>
+                        @if (location.objectNumber) {
+                        <p>Objekt: {{ location.objectNumber }}</p>
+                        }
+                        
+                        <!-- Status-Badges für diese Location -->
+                        @if (location.statuses) {
+                        <div class="status-badges">
+                          @for (status of getStatusEntries(location.statuses); track status.key) {
+                          <ion-chip 
+                            [color]="getStatusColor(status.key)"
+                            class="status-chip">
+                            <ion-label>{{ translateStatus(status.key) }}: {{ status.value }}</ion-label>
+                          </ion-chip>
+                          }
+                        </div>
+                        }
+                        
+                        <!-- Fallback wenn keine Status-Daten -->
+                        @if (!location.statuses || getStatusEntries(location.statuses).length === 0) {
+                        <p class="no-data">
+                          Keine Worklog-Daten verfügbar
+                        </p>
+                        }
+                      </ion-label>
+                      
+                      <!-- Location Status Icon -->
+                      <ion-icon 
+                        slot="end" 
+                        [name]="isLocationFullyExported(location) ? 'checkmark-circle-outline' : 'warning-outline'"
+                        [color]="isLocationFullyExported(location) ? 'success' : 'warning'">
+                      </ion-icon>
+                    </ion-item>
+                    }
+                  </ion-list>
+                  
+                </ion-card-content>
+              </ion-card>
+              }
+              
+              <!-- Fallback wenn Manager keine Locations hat -->
+              @if (!manager.locations || manager.locations.length === 0) {
+              <ion-card>
+                <ion-card-content class="text-center">
+                  <ion-icon name="location-outline" color="medium" size="large"></ion-icon>
+                  <p>Keine Standorte gefunden für {{ manager.fullName }}</p>
+                </ion-card-content>
+              </ion-card>
+              }
+              
+            </div>
+          </ion-accordion>
+          }
+        </ion-accordion-group>
+        
+        <!-- Empty State -->
+        @if (getFilteredManagers().length === 0) {
+        <div class="text-center ion-padding">
+          <ion-icon name="people-outline" color="medium" size="large"></ion-icon>
+          <h3>Keine Service Manager gefunden</h3>
+          <p>Versuchen Sie einen anderen Suchbegriff oder laden Sie neue Daten.</p>
+        </div>
+        }
+        
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+  }
+
+  <!-- Empty State -->
+  @if (!currentResult() && !isLoading()) {
+  <div class="empty-state">
+    <ion-card>
+      <ion-card-content class="text-center">
+        <ion-icon name="analytics-outline" color="medium" size="large"></ion-icon>
+        <h3>Keine Auswertung verfügbar</h3>
+        <p>Klicken Sie auf "Neue Auswertung", um eine sichere Datenanalyse zu starten.</p>
+        <ion-button fill="solid" color="primary" (click)="isConfigModalOpen.set(true)">
+          <ion-icon name="settings-outline" slot="start"></ion-icon>
+          Auswertung konfigurieren
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  }
+
+  <!-- Configuration Modal -->
+  <ion-modal [isOpen]="isConfigModalOpen()" (didDismiss)="isConfigModalOpen.set(false)">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Auswertung konfigurieren</ion-title>
+          <ion-button fill="clear" slot="end" (click)="isConfigModalOpen.set(false)">
+            <ion-icon name="close"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+      
+      <ion-content>
+        <form [formGroup]="configForm" (ngSubmit)="runEvaluation()">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="calendar-outline"></ion-icon>
+                Zeitraum
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item>
+                <ion-label position="stacked">Von</ion-label>
+                <ion-datetime
+                  formControlName="startDate"
+                  presentation="date"
+                  [max]="configForm.get('endDate')?.value">
+                </ion-datetime>
+              </ion-item>
+              
+              <ion-item>
+                <ion-label position="stacked">Bis</ion-label>
+                <ion-datetime
+                  formControlName="endDate"
+                  presentation="date"
+                  [min]="configForm.get('startDate')?.value">
+                </ion-datetime>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Optionen</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item>
+                <ion-checkbox formControlName="includeInactive"></ion-checkbox>
+                <ion-label class="ion-margin-start">Inaktive Manager einbeziehen</ion-label>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-content>
+              <ion-button
+                expand="block"
+                type="submit"
+                [disabled]="!configForm.valid || isLoading()"
+                color="primary">
+                <ion-icon name="analytics-outline" slot="start"></ion-icon>
+                @if (!isLoading()) {
+                <span>Sichere Auswertung starten</span>
+                }
+                @if (isLoading()) {
+                <span>
+                  <ion-spinner name="crescent"></ion-spinner>
+                  Backend lädt...
+                </span>
+                }
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>

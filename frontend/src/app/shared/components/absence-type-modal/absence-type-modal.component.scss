@@ -1,0 +1,91 @@
+.button-group {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.color-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.color-picker {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  padding: 1px;
+  
+  &:focus {
+    outline: none;
+    border: 1px solid var(--ion-color-light-shade);
+  }
+}
+
+.color-value {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+ion-chip {
+  font-weight: 600;
+  
+  ion-icon {
+    font-size: 1.2rem;
+  }
+}
+
+ion-input, ion-select {
+  --padding-start: 12px;
+  --padding-end: 12px;
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+ion-label[position="stacked"] {
+  font-weight: 500;
+  font-size: 0.875rem;
+  margin-bottom: 4px;
+  color: var(--ion-color-dark);
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: 60px;
+}
+
+// Icon Picker Alert mit echten Ionic Icons
+:host ::ng-deep .icon-picker-alert {
+  .alert-button-inner {
+    justify-content: flex-start !important;
+    
+    &::before {
+      font-family: 'Ionicons' !important;
+      font-size: 20px;
+      margin-right: 12px;
+      display: inline-block;
+      width: 24px;
+      text-align: center;
+    }
+  }
+  
+  .alert-wrapper {
+    max-height: 80vh;
+  }
+  
+  .alert-message {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}

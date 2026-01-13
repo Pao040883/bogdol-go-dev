@@ -1,0 +1,206 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Berechtigungen konfigurieren</ion-title>
+    <ion-buttons slot="end">
+      @if (isSaving()) {
+        <ion-spinner></ion-spinner>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Segment für View-Auswahl -->
+  <ion-toolbar>
+    <ion-segment [value]="viewMode()" (ionChange)="onViewModeChange($event)">
+      <ion-segment-button value="departments">
+        <ion-icon name="business-outline"></ion-icon>
+        <ion-label>Abteilungen</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="roles">
+        <ion-icon name="people-outline"></ion-icon>
+        <ion-label>Rollen</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="specialties">
+        <ion-icon name="ribbon-outline"></ion-icon>
+        <ion-label>Fachbereiche</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="permission-config-container">
+    
+    <!-- Info Card -->
+    <ion-card class="info-card" color="light">
+      <ion-card-content>
+        <div class="info-content">
+          <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+          <div>
+            <strong>So funktioniert's:</strong>
+            <ol>
+              <li>Wähle oben einen Typ aus (Abteilung, Rolle oder Fachbereich)</li>
+              <li>Klicke links auf eine Entity (z.B. "Faktur")</li>
+              <li>Rechts kannst du dann die Berechtigungen aktivieren/deaktivieren</li>
+              <li>Klicke auf "Permissions speichern" um zu übernehmen</li>
+            </ol>
+            <p><ion-note>Benutzer erben automatisch die Berechtigungen ihrer zugewiesenen Abteilungen, Rollen und Fachbereiche.</ion-note></p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+    
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="loading-state">
+        <ion-spinner></ion-spinner>
+        <p>Lade Berechtigungen...</p>
+      </div>
+    }
+
+    <!-- Main Content -->
+    @if (!isLoading()) {
+      <div class="content-grid">
+        
+        <!-- Left: Entity Liste -->
+        <div class="entity-list">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                @switch (viewMode()) {
+                  @case ('departments') { Abteilungen }
+                  @case ('roles') { Rollen }
+                  @case ('specialties') { Fachbereiche }
+                }
+              </ion-card-title>
+            </ion-card-header>
+
+            <ion-card-content>
+              <!-- Suchleiste -->
+              <ion-searchbar
+                [(ngModel)]="searchTerm"
+                placeholder="Suchen..."
+                debounce="300">
+              </ion-searchbar>
+
+              <!-- Entity Liste -->
+              <ion-list>
+                @for (entity of getFilteredEntities(); track entity.id) {
+                  <ion-item
+                    button
+                    [class.selected]="selectedEntityId() === entity.id"
+                    (click)="selectEntity(entity.id)">
+                    <ion-label>
+                      <h2>{{ entity.name }}</h2>
+                      @if (entity.code) {
+                        <p>{{ entity.code }}</p>
+                      }
+                    </ion-label>
+                    @if (selectedEntityId() === entity.id) {
+                      <ion-icon name="checkmark-circle" color="primary" slot="end"></ion-icon>
+                    }
+                  </ion-item>
+                } @empty {
+                  <ion-item>
+                    <ion-label>
+                      <p>Keine Einträge gefunden</p>
+                    </ion-label>
+                  </ion-item>
+                }
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Right: Permissions -->
+        <div class="permissions-panel">
+          @if (selectedEntityId()) {
+            <!-- Save Button -->
+            <div class="save-toolbar">
+              <ion-button
+                expand="block"
+                (click)="savePermissions()"
+                [disabled]="isSaving()">
+                <ion-icon name="save-outline" slot="start"></ion-icon>
+                @if (isSaving()) {
+                  Speichern...
+                } @else {
+                  Permissions speichern
+                }
+              </ion-button>
+            </div>
+
+            <!-- Permission Groups by Category -->
+            <ion-accordion-group [multiple]="true" [value]="['APP', 'WORKORDER', 'ABSENCE', 'ADMIN']">
+              @for (category of permissionsByCategory() | keyvalue; track category.key) {
+                <ion-accordion [value]="category.key">
+                  <ion-item slot="header" [color]="getCategoryColor(category.key)">
+                    <ion-icon [name]="getCategoryIcon(category.key)" slot="start"></ion-icon>
+                    <ion-label>
+                      <h2>{{ category.key }}</h2>
+                      <p>{{ category.value.length }} Permissions</p>
+                    </ion-label>
+                    <ion-chip slot="end">
+                      {{ getSelectedCountForCategory(category.value) }} / {{ category.value.length }}
+                    </ion-chip>
+                  </ion-item>
+
+                  <div class="permission-list" slot="content">
+                    @for (permission of category.value; track permission.id) {
+                      <ion-item>
+                        <ion-checkbox
+                          [checked]="isPermissionSelected(permission.code)"
+                          (ionChange)="togglePermission(permission.code)"
+                          slot="start">
+                        </ion-checkbox>
+                        <ion-label>
+                          <h3>{{ permission.name }}</h3>
+                          <p>{{ permission.description }}</p>
+                          <ion-note>Code: {{ permission.code }}</ion-note>
+                          @if (supportsScope(permission)) {
+                            <ion-note color="primary">
+                              <ion-icon name="layers-outline"></ion-icon>
+                              Unterstützt Scope (Standard: {{ permission.default_scope }})
+                            </ion-note>
+                          }
+                        </ion-label>
+                        
+                        @if (supportsScope(permission) && isPermissionSelected(permission.code)) {
+                          <ion-select
+                            [value]="getPermissionScope(permission.code)"
+                            (ionChange)="setPermissionScope(permission.code, $event.detail.value)"
+                            interface="popover"
+                            slot="end"
+                            style="max-width: 200px;">
+                            @for (option of scopeOptions; track option.value) {
+                              <ion-select-option [value]="option.value">
+                                {{ option.label }}
+                              </ion-select-option>
+                            }
+                          </ion-select>
+                        }
+                      </ion-item>
+                    }
+                  </div>
+                </ion-accordion>
+              }
+            </ion-accordion-group>
+
+          } @else {
+            <!-- No Selection State -->
+            <ion-card>
+              <ion-card-content class="no-selection">
+                <ion-icon name="arrow-back-outline" size="large" color="medium"></ion-icon>
+                <p>Wähle links eine Entity aus, um Permissions zu konfigurieren</p>
+              </ion-card-content>
+            </ion-card>
+          }
+        </div>
+
+      </div>
+    }
+
+  </div>
+</ion-content>

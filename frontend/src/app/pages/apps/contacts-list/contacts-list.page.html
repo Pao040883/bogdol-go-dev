@@ -1,0 +1,213 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/apps"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Telefonbuch</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleSearchMode()" [title]="searchMode() === 'semantic' ? 'KI-Suche aktiv' : 'Text-Suche aktiv'">
+        <ion-icon 
+          slot="icon-only" 
+          [name]="searchMode() === 'semantic' ? 'sparkles-outline' : 'search-outline'"
+          [color]="searchMode() === 'semantic' ? 'warning' : 'light'"
+        ></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  @if (searchMode() === 'semantic') {
+    <ion-toolbar color="warning">
+      <ion-label class="ion-padding-horizontal">
+        <small>
+          <ion-icon name="sparkles-outline"></ion-icon>
+          KI-Suche aktiv - z.B. "Handy kaputt", "Frage zur Rechnung"
+        </small>
+      </ion-label>
+    </ion-toolbar>
+  }
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="search-container">
+    <ion-searchbar
+      #searchbar
+      [debounce]="300"
+      (ionInput)="handleInput($event)"
+      [placeholder]="searchMode() === 'semantic' ? 'Was benötigen Sie? (z.B. IT-Problem, Rechnung)' : 'Name oder Abteilung suchen'"
+    ></ion-searchbar>
+    
+    <!-- Auto-Complete Dropdown -->
+    @if (showAutocomplete && autocompleteOptions.length > 0) {
+      <ion-list class="autocomplete-dropdown">
+        @for (suggestion of autocompleteOptions; track suggestion) {
+          <ion-item button (click)="selectAutocompleteOption(suggestion)">
+            <ion-icon name="search" slot="start" color="medium"></ion-icon>
+            <ion-label>{{ suggestion }}</ion-label>
+            <ion-icon name="arrow-forward" slot="end" color="medium"></ion-icon>
+          </ion-item>
+        }
+      </ion-list>
+    }
+    
+    <!-- Related Queries (nach Suche) -->
+    @if (relatedQueries.length > 0 && !showAutocomplete) {
+      <div class="related-queries">
+        <ion-text color="medium">
+          <small>Ähnliche Suchen:</small>
+        </ion-text>
+        <div class="query-chips">
+          @for (related of relatedQueries; track related) {
+            <ion-chip (click)="selectAutocompleteOption(related)" color="primary" outline="true">
+              <ion-label>{{ related }}</ion-label>
+            </ion-chip>
+          }
+        </div>
+      </div>
+    }
+  </div>
+  
+  <ion-accordion-group [multiple]="true" [value]="expandedAccordion">
+    @for (result of results(); track result.id) {
+    <ion-accordion [value]="result.first_name">
+      <ion-item slot="header" lines="full" (click)="toggleAccordion(result.id)">
+        <ion-icon
+          aria-hidden="true"
+          [name]="getUserPresenceIcon(result)"
+          slot="start"
+          [color]="getUserPresenceColor(result)"
+        ></ion-icon>
+
+        <ion-label>
+          <h2>{{result.first_name}} {{result.last_name}}</h2>
+          <p>{{result.company}}</p>
+          
+          @if (searchMode() === 'semantic') {
+            @if (getRelevanceScore(result)) {
+              <p class="relevance-info">
+                <ion-icon name="analytics"></ion-icon>
+                Relevanz: {{getRelevanceScore(result)! * 100 | number:'1.0-0'}}%
+                @if (getMatchedFields(result).length > 0) {
+                  · Gefunden: {{getMatchedFields(result)[0][0]}}
+                }
+              </p>
+            }
+          }
+        </ion-label>
+        
+        @if (isUserOnline(result)) {
+          <ion-badge color="success" slot="end">Online</ion-badge>
+        }
+      </ion-item>
+      <table slot="content">
+        <tr>
+          <td>Festnetz</td>
+          <td><a href="tel:{{result.phone_number}}">{{result.phone_number}}</a></td>
+        </tr>
+        <tr>
+          <td>Mobil</td>
+          <td><a href="tel:{{result.mobil_number}}">{{result.mobil_number}}</a></td>
+        </tr>
+        <tr>
+          <td>E-Mail</td>
+          <td>
+            <a href="mailto:{{result.email}}">{{result.email}}</a>
+          </td>
+        </tr>
+        <tr>
+          <td>Chat</td>
+          <td>
+            <ion-button size="small" fill="outline" (click)="startChatWithUser(result)">
+              <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
+              Nachricht senden
+            </ion-button>
+          </td>
+        </tr>
+        <tr>
+          <td>Profil</td>
+          <td>
+            <ion-button size="small" fill="solid" color="primary" (click)="openUserDetail(result)">
+              <ion-icon name="person-outline" slot="start"></ion-icon>
+              Details anzeigen
+            </ion-button>
+          </td>
+        </tr>
+        @if(result.is_absent) {
+        <tr>
+          <td colspan="2" class="absence-info">
+            <ion-chip color="danger" size="small">
+              <ion-icon name="alert-circle"></ion-icon>
+              <ion-label>Abwesend bis {{result.absence_end_date | date:'dd.MM.yyyy'}}</ion-label>
+            </ion-chip>
+          </td>
+        </tr>
+        <tr>
+          <td>Vertretung</td>
+          <td>
+            <ion-button 
+              size="small" 
+              fill="outline"
+              (click)="setSubstitutionFilter(result.representative?.id)">
+              <ion-icon name="person" slot="start"></ion-icon>
+              {{result.representative?.first_name}} {{result.representative?.last_name}}
+            </ion-button>
+          </td>
+        </tr>
+        }
+      </table>
+    </ion-accordion>
+    }
+  </ion-accordion-group>
+</ion-content>
+
+<ion-modal
+  [isOpen]="showMessageModal"
+  (didDismiss)="closeMessageModal()"
+  [backdropDismiss]="!isSending"
+>
+  @if (selectedUser) {
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Nachricht senden</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeMessageModal()">Schließen</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-item>
+          <ion-label>
+            <h2>{{ selectedUser.first_name }} {{ selectedUser.last_name }}</h2>
+            <p>{{ selectedUser.email }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-textarea
+            autoGrow="true"
+            placeholder="Ihre Nachricht"
+            [(ngModel)]="messageText"
+            [disabled]="isSending"
+          ></ion-textarea>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+    <ion-footer>
+      <ion-toolbar>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="closeMessageModal()" [disabled]="isSending">Abbrechen</ion-button>
+          <ion-button color="primary" (click)="sendMessageFromModal()" [disabled]="isSending || !messageText.trim()">
+            {{ isSending ? 'Senden...' : 'Senden' }}
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  } @else {
+    <ion-content>
+      <ion-list>
+        <ion-item>
+          <ion-label>Kein Empfänger ausgewählt</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  }
+</ion-modal>

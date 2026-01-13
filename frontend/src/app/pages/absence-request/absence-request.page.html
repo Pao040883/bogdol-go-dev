@@ -1,0 +1,234 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/apps/absences/my-absences"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="calendar-outline"></ion-icon>
+      Abwesenheit beantragen
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page-container">
+    
+    <!-- Urlaubsübersicht (nur bei Urlaubstyp) -->
+    @if (vacationSummary() && isVacationType()) {
+      <ion-card class="vacation-summary-card">
+        <ion-card-header>
+          <ion-card-title>Ihr Urlaubsanspruch {{vacationSummary()!.vacation_year || currentYear}}</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="vacation-stats">
+            <div class="stat-item">
+              <ion-label>Gesamt</ion-label>
+              <ion-badge color="medium">{{vacationSummary()!.total_entitlement}} Tage</ion-badge>
+            </div>
+            <div class="stat-item">
+              <ion-label>Verbraucht</ion-label>
+              <ion-badge color="warning">{{vacationSummary()!.used_vacation_days}} Tage</ion-badge>
+            </div>
+            <div class="stat-item">
+              <ion-label>Verfügbar</ion-label>
+              <ion-badge color="success">{{vacationSummary()!.remaining_vacation_days}} Tage</ion-badge>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Hauptformular -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Angaben zur Abwesenheit</ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <form [formGroup]="absenceForm" (ngSubmit)="onSubmit()">
+          
+          <!-- Typ -->
+          <ion-item>
+            <ion-label position="stacked">
+              Typ <span class="required">*</span>
+            </ion-label>
+            <ion-select 
+              formControlName="absence_type_id" 
+              placeholder="Wählen Sie einen Typ"
+              interface="popover">
+              @for (type of absenceService.absenceTypes(); track type.id) {
+                <ion-select-option [value]="type.id">
+                  {{ type.display_name }}
+                </ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <!-- Typ-Info -->
+          @if (selectedAbsenceType()) {
+            <ion-note class="type-info">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              {{ selectedAbsenceType()!.description }}
+              
+              @if (selectedAbsenceType()!.advance_notice_days > 0) {
+                <br>
+                <strong>Vorlaufzeit:</strong> {{ selectedAbsenceType()!.advance_notice_days }} Tag(e)
+              }
+              
+              @if (selectedAbsenceType()!.max_consecutive_days) {
+                <br>
+                <strong>Max. Dauer:</strong> {{ selectedAbsenceType()!.max_consecutive_days }} Tag(e)
+              }
+              
+              @if (selectedAbsenceType()!.requires_certificate) {
+                <br>
+                <ion-badge color="warning">Nachweis erforderlich</ion-badge>
+              }
+            </ion-note>
+          }
+
+          <!-- Von -->
+          <ion-item>
+            <ion-label position="stacked">
+              Von <span class="required">*</span>
+            </ion-label>
+            <ion-input 
+              type="date" 
+              formControlName="start_date"
+              [min]="getMinDate()">
+            </ion-input>
+          </ion-item>
+
+          <!-- Bis -->
+          <ion-item>
+            <ion-label position="stacked">
+              Bis <span class="required">*</span>
+            </ion-label>
+            <ion-input 
+              type="date" 
+              formControlName="end_date"
+              [min]="absenceForm.get('start_date')?.value || getMinDate()">
+            </ion-input>
+          </ion-item>
+
+          <!-- Berechne Dauer -->
+          @if (calculatedDuration() > 0) {
+            <ion-note class="duration-note">
+              <ion-icon name="calendar-outline"></ion-icon>
+              Arbeitstage: <strong>{{ calculatedDuration() }}</strong>
+              
+              @if (isVacationType() && vacationSummary()) {
+                · Verbleibend nach Antrag: 
+                <strong [class.text-warning]="calculatedDuration() > vacationSummary()!.remaining_vacation_days">
+                  {{ vacationSummary()!.remaining_vacation_days - calculatedDuration() }}
+                </strong> Tage
+              }
+            </ion-note>
+          }
+
+          <!-- Grund -->
+          <ion-item>
+            <ion-label position="stacked">
+              Grund / Anmerkung
+              @if (!selectedAbsenceType()?.requires_approval) {
+                <span class="optional">(optional)</span>
+              }
+            </ion-label>
+            <ion-textarea 
+              formControlName="reason"
+              placeholder="z.B. Familienurlaub, Arzttermin, etc."
+              rows="3"
+              [counter]="true"
+              maxlength="500">
+            </ion-textarea>
+          </ion-item>
+
+          <!-- Vertretung -->
+          @if (selectedAbsenceType()?.requires_approval) {
+            <ion-item>
+              <ion-label position="stacked">
+                Vertretung <span class="required">*</span>
+              </ion-label>
+              <ion-select 
+                formControlName="representative_id"
+                placeholder="Wählen Sie eine Vertretung"
+                interface="popover">
+                @for (user of availableUsers(); track user.id) {
+                  <ion-select-option [value]="user.id">
+                    {{ getUserDisplayName(user) }}
+                    @if (user.department) {
+                      <span class="user-dept"> ({{ user.department }})</span>
+                    }
+                  </ion-select-option>
+                }
+              </ion-select>
+            </ion-item>
+          }
+
+          <!-- Warnungen -->
+          @if (showOverlapWarning()) {
+            <ion-note color="warning" class="warning-note">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              <strong>Achtung!</strong> Der gewählte Zeitraum überschneidet sich mit bestehenden Abwesenheiten:
+              <ul>
+                @for (overlap of overlapCheck().overlappingAbsences; track overlap.id) {
+                  <li>{{ overlap.start_date | date:'dd.MM.yyyy' }} - {{ overlap.end_date | date:'dd.MM.yyyy' }}</li>
+                }
+              </ul>
+            </ion-note>
+          }
+
+          @if (showVacationWarning()) {
+            <ion-note color="danger" class="warning-note">
+              <ion-icon name="alert-circle-outline"></ion-icon>
+              <strong>Warnung!</strong> Sie haben nicht genügend Urlaubstage verfügbar!
+              <br>
+              Benötigt: {{ calculatedDuration() }} Tage · 
+              Verfügbar: {{ vacationSummary()!.remaining_vacation_days }} Tage
+            </ion-note>
+          }
+
+          <!-- Loading Bar -->
+          @if (isSubmitting()) {
+            <ion-progress-bar type="indeterminate" color="primary"></ion-progress-bar>
+          }
+
+          <!-- Buttons -->
+          <div class="form-actions">
+            <ion-button 
+              expand="block" 
+              type="submit" 
+              [disabled]="absenceForm.invalid || isSubmitting()"
+              color="primary">
+              <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+              @if (isSubmitting()) {
+                Wird gesendet...
+              } @else {
+                Antrag einreichen
+              }
+            </ion-button>
+
+            <ion-button 
+              expand="block" 
+              fill="clear" 
+              routerLink="/apps/absences/my-absences"
+              [disabled]="isSubmitting()">
+              Abbrechen
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Bestätigungs-Alert -->
+  <ion-alert
+    [isOpen]="showConfirmAlert()"
+    header="Antrag trotzdem einreichen?"
+    [message]="showVacationWarning() ? 
+      'Sie haben nicht genügend Urlaubstage. Möchten Sie den Antrag trotzdem einreichen?' :
+      'Es gibt Überschneidungen mit bestehenden Abwesenheiten. Trotzdem fortfahren?'"
+    (didDismiss)="cancelSubmit()"
+    [buttons]="alertButtons">
+  </ion-alert>
+</ion-content>

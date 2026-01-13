@@ -1,0 +1,29 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Abwesenheiten genehmigen</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <h2>Ausstehende Genehmigungen</h2>
+  
+  @if (approvals().length === 0) {
+    <p>Keine offenen Genehmigungen</p>
+  } @else {
+    <ion-list>
+      @for (absence of approvals(); track absence.id) {
+        <ion-item>
+          <ion-label>
+            <h3>{{ absence.user.first_name }} {{ absence.user.last_name }}</h3>
+            <p>{{ absence.start_date }} - {{ absence.end_date }}</p>
+          </ion-label>
+          <ion-button color="success" (click)="approve(absence.id!)">Genehmigen</ion-button>
+          <ion-button color="danger" (click)="openRejectModal(absence.id!)">Ablehnen</ion-button>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>

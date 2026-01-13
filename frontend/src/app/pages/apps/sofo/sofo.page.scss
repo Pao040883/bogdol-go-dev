@@ -1,0 +1,22 @@
+ion-list-header {
+  margin-top: 56px;
+}
+
+ion-tab {
+  overflow-y: scroll;
+}
+
+.date-button {
+  width: 100%;
+}
+
+.date-button::part(native) {
+  width: 100%;
+  text-align: left;
+  background-color: transparent;
+  padding-inline: 0;
+}
+
+ion-note {
+  padding-left: 16px;
+}

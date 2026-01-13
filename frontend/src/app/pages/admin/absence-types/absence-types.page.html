@@ -1,0 +1,174 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button [routerLink]="['/admin']">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Abwesenheitsarten</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<app-tab-layout [tabs]="tabConfig" tabBarColor="primary">
+  <!-- Tab 1: Liste -->
+  <div tab-content-list>
+    <ion-list>
+      <ion-list-header>
+        <ion-label>
+          <h2>Aktive Abwesenheitsarten</h2>
+          <p>Verwalte die verfügbaren Abwesenheitstypen</p>
+        </ion-label>
+      </ion-list-header>
+
+      @for (type of absenceTypes(); track type.id) {
+        <ion-item button (click)="openEdit(type)">
+          <ion-icon 
+            slot="start" 
+            [name]="type.icon || 'calendar-outline'" 
+            [style.color]="type.color"
+            style="font-size: 28px;">
+          </ion-icon>
+          <ion-label>
+            <h2>{{ type.display_name }}</h2>
+            <p>{{ type.description }}</p>
+            <p class="type-details">
+              @if (type.requires_approval) {
+                <ion-chip color="primary" [outline]="true">
+                  Genehmigungspflichtig
+                </ion-chip>
+              }
+              @if (type.deduct_from_vacation) {
+                <ion-chip color="warning" [outline]="true">
+                  Zählt als Urlaub
+                </ion-chip>
+              }
+            </p>
+          </ion-label>
+          <ion-button fill="clear" color="danger" slot="end" (click)="delete(type); $event.stopPropagation()">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      } @empty {
+        <ion-item>
+          <ion-label class="ion-text-center">
+            <p>Keine Abwesenheitsarten vorhanden</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  </div>
+
+  <!-- Tab 2: Neu erstellen -->
+  <div tab-content-new>
+    <ion-list>
+      <ion-list-header>
+        <ion-label>
+          <h2>Neue Abwesenheitsart erstellen</h2>
+          <p>Füge eine neue Abwesenheitsart hinzu</p>
+        </ion-label>
+      </ion-list-header>
+
+      <ion-item>
+        <ion-label position="stacked">Technischer Name (z.B. vacation) *</ion-label>
+        <ion-input 
+          [value]="formName()" 
+          (ionInput)="formName.set($any($event.target).value)"
+          placeholder="vacation">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Anzeigename *</ion-label>
+        <ion-input 
+          [value]="formDisplayName()" 
+          (ionInput)="formDisplayName.set($any($event.target).value)"
+          placeholder="Urlaub">
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Beschreibung</ion-label>
+        <ion-input 
+          [value]="formDescription()" 
+          (ionInput)="formDescription.set($any($event.target).value)"
+          placeholder="Bezahlter Jahresurlaub">
+        </ion-input>
+      </ion-item>
+
+      <ion-item button (click)="openIconPicker()">
+        <ion-label position="stacked">Icon auswählen</ion-label>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
+          <div style="width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"
+               [style.background-color]="formColor()">
+            <ion-icon [name]="formIcon()" style="font-size: 24px; color: white;"></ion-icon>
+          </div>
+          <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ getSelectedIconLabel() }}</span>
+          <ion-icon name="chevron-forward-outline" style="color: var(--ion-color-medium); flex-shrink: 0;"></ion-icon>
+        </div>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Farbe</ion-label>
+        <div class="color-picker-wrapper">
+          <input 
+            type="color" 
+            [value]="formColor()" 
+            (input)="formColor.set($any($event.target).value)"
+            class="color-picker">
+          <span class="color-value">{{ formColor() }}</span>
+        </div>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Genehmigungspflichtig</ion-label>
+        <ion-select 
+          [value]="formRequiresApproval()" 
+          (ionChange)="formRequiresApproval.set($event.detail.value)">
+          <ion-select-option [value]="true">Ja</ion-select-option>
+          <ion-select-option [value]="false">Nein</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Von Urlaubskonto abziehen</ion-label>
+        <ion-select 
+          [value]="formDeductFromVacation()" 
+          (ionChange)="formDeductFromVacation.set($event.detail.value)">
+          <ion-select-option [value]="true">Ja</ion-select-option>
+          <ion-select-option [value]="false">Nein</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      @if (absenceService.error()) {
+        <ion-item lines="none">
+          <ion-label color="danger">{{ absenceService.error() }}</ion-label>
+        </ion-item>
+      }
+
+      <ion-button 
+        expand="block" 
+        (click)="createNew()" 
+        [disabled]="!formName() || !formDisplayName() || absenceService.isLoading()">
+        Abwesenheitsart erstellen
+      </ion-button>
+    </ion-list>
+  </div>
+
+  <!-- Tab 3: Archiv -->
+  <div tab-content-archive>
+    <ion-list>
+      <ion-list-header>
+        <ion-label>
+          <h2>Archivierte Abwesenheitsarten</h2>
+          <p>Deaktivierte und archivierte Typen</p>
+        </ion-label>
+      </ion-list-header>
+      <ion-item>
+        <ion-label class="ion-text-center">
+          <p>Keine archivierten Einträge</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</app-tab-layout>
+

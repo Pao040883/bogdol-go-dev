@@ -1,0 +1,76 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Meine Faktura Mitarbeiter Zuweisungen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (loading()) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Faktura Mitarbeiter...</p>
+    </div>
+  } @else {
+    <ion-list>
+      <ion-item lines="none" class="header-item">
+        <ion-label>
+          <h2>Faktura Mitarbeiter</h2>
+          <p>Wählen Sie die Faktura-Mitarbeiter aus, für die Sie zuständig sind</p>
+        </ion-label>
+      </ion-item>
+
+      @if (fakturaEmployees().length === 0) {
+        <ion-item>
+          <ion-label class="ion-text-center">
+            <p>Keine Faktura Mitarbeiter gefunden</p>
+          </ion-label>
+        </ion-item>
+      }
+
+      @for (employee of fakturaEmployees(); track employee.id) {
+        <ion-item>
+          <ion-checkbox
+            slot="start"
+            [checked]="isAssigned(employee.id)"
+            [disabled]="isCheckboxDisabled(employee)"
+            (ionChange)="toggleAssignment(employee, $event)"
+          ></ion-checkbox>
+          
+          <ion-label>
+            <h3>{{ employee.name }}</h3>
+            <p>{{ employee.username }}</p>
+            @if (employee.department) {
+              <p>
+                <ion-icon name="business"></ion-icon>
+                {{ employee.department.name }}
+              </p>
+            }
+            @if (employee.assignment && !employee.assignment.is_my_assignment) {
+              <p class="assigned-to-other">
+                <ion-icon name="person"></ion-icon>
+                Zugewiesen an: {{ employee.assignment.faktura_processor_name }}
+              </p>
+            }
+          </ion-label>
+
+          @if (employee.assignment) {
+            <ion-note slot="end" [color]="employee.assignment.is_my_assignment ? 'success' : 'warning'">
+              <small>{{ employee.assignment.is_my_assignment ? 'Meine Zuweisung' : 'Fremde Zuweisung' }}</small>
+            </ion-note>
+          }
+        </ion-item>
+      }
+    </ion-list>
+
+    <div class="summary">
+      <ion-note>
+        <strong>{{ myAssignments().length }}</strong> Faktura Mitarbeiter zugewiesen
+      </ion-note>
+    </div>
+  }
+</ion-content>

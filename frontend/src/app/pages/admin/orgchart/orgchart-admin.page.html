@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Abteilungen & Rollen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['/apps/intranet/organigramm']">
+        <ion-icon name="git-network-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Segment für Abteilungen / Rollen -->
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="selectedSegment" (ionChange)="onSegmentChange($event)">
+      <ion-segment-button value="departments">
+        <ion-label>Abteilungen</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="roles">
+        <ion-label>Rollen</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Daten...</p>
+    </div>
+  } @else {
+    <!-- Abteilungen Tab -->
+    @if (selectedSegment === 'departments') {
+      <div class="info-box">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <p>Einfache Abteilungsliste. Die Zuordnung von Mitarbeitern erfolgt im User-Profil.</p>
+      </div>
+
+      <div class="list-container">
+        @for (dept of departments; track dept.id) {
+          <ion-item lines="full" class="list-item">
+            <ion-label>
+              <h2>{{ dept.name }}</h2>
+              <p>{{ dept.code }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="dept.org_type === 'administration' ? 'primary' : 'warning'">
+              {{ dept.org_type_display }}
+            </ion-badge>
+          </ion-item>
+        } @empty {
+          <div class="empty-state">
+            <ion-icon name="business-outline" size="large"></ion-icon>
+            <p>Keine Abteilungen vorhanden</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Rollen Tab -->
+    @if (selectedSegment === 'roles') {
+      <div class="info-box">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <p>Verfügbare Rollen. Die Zuordnung zu Mitarbeitern erfolgt im User-Profil.</p>
+      </div>
+
+      <div class="list-container">
+        @for (role of roles; track role.id) {
+          <ion-item lines="full" class="list-item">
+            <div slot="start" class="role-color-indicator" [style.background-color]="role.color"></div>
+            <ion-label>
+              <h2>{{ role.name }}</h2>
+              <p>{{ role.code }} - {{ role.description }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="getRoleBadgeColor(role.hierarchy_level)">
+              Level {{ role.hierarchy_level }}
+            </ion-badge>
+          </ion-item>
+        } @empty {
+          <div class="empty-state">
+            <ion-icon name="people-outline" size="large"></ion-icon>
+            <p>Keine Rollen vorhanden</p>
+          </div>
+        }
+      </div>
+    }
+  }
+</ion-content>

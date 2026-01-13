@@ -1,0 +1,146 @@
+# =============================================================================
+# ENVIRONMENT & SECRETS
+# =============================================================================
+.env
+.env.local
+.env.*.local
+.env.production
+
+# =============================================================================
+# PYTHON / DJANGO
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/staticfiles/
+/media/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# =============================================================================
+# NODE / FRONTEND
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Build outputs
+/dist
+/tmp
+/out-tsc
+/bazel-out
+/www
+/platforms
+/plugins
+
+# Angular
+/.angular
+/.angular/cache
+.sass-cache/
+
+# Ionic
+/.ionic
+
+# =============================================================================
+# DOCKER
+# =============================================================================
+*.pid
+*.seed
+*.pid.lock
+
+# =============================================================================
+# IDEs
+# =============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# =============================================================================
+# OS
+# =============================================================================
+.DS_Store
+Thumbs.db
+
+# =============================================================================
+# COVERAGE & TESTS
+# =============================================================================
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+.nx/cache
+
+# =============================================================================
+# SECURITY
+# =============================================================================
+*.pem
+*.key
+*.crt
+ssl/private/
+nginx/.htpasswd
+
+# Aber .htpasswd template ist OK
+!nginx/.htpasswd.template
+
+# =============================================================================
+# BACKUP FILES
+# =============================================================================
+*.backup
+*.bak
+*.sql
+*.dump
+
+# =============================================================================
+# DOKUMENTATION BACKUPS
+# =============================================================================
+*.md.backup
+*.html.backup
+*.txt.backup
+temp_template_backup.txt

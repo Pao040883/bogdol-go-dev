@@ -1,0 +1,218 @@
+<div class="vacation-dashboard">
+  <!-- Header -->
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Urlaubsübersicht</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="refreshData()">
+          <ion-icon name="refresh"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding">
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="loading-container">
+      <ion-spinner name="dots"></ion-spinner>
+      <p>Lade Urlaubsdaten...</p>
+    </div>
+
+    <!-- Error State -->
+    <ion-card *ngIf="error()" color="danger">
+      <ion-card-content>
+        <ion-icon name="alert-circle"></ion-icon>
+        {{ error() }}
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Vacation Summary Cards -->
+    <div *ngIf="!isLoading() && vacationSummary()" class="vacation-summary">
+      <!-- Main Stats Card -->
+      <ion-card class="stats-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="calendar"></ion-icon>
+            Urlaubsanspruch {{ currentYear }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">{{ vacationSummary()?.total_entitlement || 0 }}</div>
+              <div class="stat-label">Gesamt-Anspruch</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{ vacationSummary()?.used_vacation_days || 0 }}</div>
+              <div class="stat-label">Bereits genommen</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value remaining">{{ vacationSummary()?.remaining_vacation_days || 0 }}</div>
+              <div class="stat-label">Verbleibend</div>
+            </div>
+            <div class="stat-item" *ngIf="vacationSummary()?.carryover_vacation">
+              <div class="stat-value carryover">{{ vacationSummary()?.carryover_vacation }}</div>
+              <div class="stat-label">Übertrag Vorjahr</div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Progress Bar Card -->
+      <ion-card class="progress-card">
+        <ion-card-content>
+          <div class="progress-info">
+            <span>Urlaubsverbrauch</span>
+            <span class="percentage">{{ getVacationUsagePercentage() }}%</span>
+          </div>
+          <ion-progress-bar 
+            [value]="getVacationUsageRatio()" 
+            [color]="getProgressColor()">
+          </ion-progress-bar>
+          <div class="progress-labels">
+            <span>0 Tage</span>
+            <span>{{ vacationSummary()?.total_entitlement || 0 }} Tage</span>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Quick Actions -->
+      <ion-card class="actions-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="flash"></ion-icon>
+            Schnellaktionen
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="action-buttons">
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              color="primary"
+              (click)="requestVacation()">
+              <ion-icon name="add-circle" slot="start"></ion-icon>
+              Urlaub beantragen
+            </ion-button>
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              color="secondary"
+              (click)="viewMyAbsences()">
+              <ion-icon name="list" slot="start"></ion-icon>
+              Meine Abwesenheiten
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Recent Vacation Requests -->
+    <ion-card *ngIf="recentVacations().length > 0" class="recent-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="time"></ion-icon>
+          Aktuelle Urlaubsanträge
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item *ngFor="let vacation of recentVacations()" class="vacation-item">
+            <div class="vacation-info" slot="start">
+              <div class="vacation-dates">
+                {{ vacation.start_date | date:'dd.MM.yyyy' }} - {{ vacation.end_date | date:'dd.MM.yyyy' }}
+              </div>
+              <div class="vacation-duration">
+                {{ vacation.workday_duration }} {{ vacation.workday_duration === 1 ? 'Arbeitstag' : 'Arbeitstage' }}
+              </div>
+            </div>
+            <ion-chip 
+              [color]="getStatusColor(vacation.status)" 
+              slot="end">
+              {{ getStatusLabel(vacation.status) }}
+            </ion-chip>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Vacation Calendar Preview -->
+    <ion-card class="calendar-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="calendar-outline"></ion-icon>
+          Geplante Urlaubstage
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="calendar-info">
+          <p>Hier könnten die nächsten geplanten Urlaubstage angezeigt werden.</p>
+          <ion-button 
+            fill="outline" 
+            size="small"
+            (click)="openCalendarView()">
+            <ion-icon name="calendar" slot="start"></ion-icon>
+            Kalender öffnen
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Team Vacation Overview (for supervisors) -->
+    <ion-card *ngIf="isManager()" class="team-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="people"></ion-icon>
+          Team-Urlaubsübersicht
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="team-info">
+          <p>Übersicht über Urlaubsanträge Ihres Teams.</p>
+          <ion-button 
+            fill="outline" 
+            color="tertiary"
+            (click)="viewTeamAbsences()">
+            <ion-icon name="eye" slot="start"></ion-icon>
+            Team-Anträge anzeigen
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Tips and Information -->
+    <ion-card class="info-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="information-circle"></ion-icon>
+          Wichtige Hinweise
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-icon name="checkmark-circle" color="success" slot="start"></ion-icon>
+            <div>
+              <div class="info-title">Antragsfrist</div>
+              <div class="info-text">Urlaubsanträge sollten mindestens 2 Wochen im Voraus gestellt werden.</div>
+            </div>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="calendar-number" color="primary" slot="start"></ion-icon>
+            <div>
+              <div class="info-title">Resturlaub</div>
+              <div class="info-text">Resturlaub kann bis zum 31. März des Folgejahres genommen werden.</div>
+            </div>
+          </ion-item>
+          <ion-item>
+            <ion-icon name="document-text" color="warning" slot="start"></ion-icon>
+            <div>
+              <div class="info-title">Genehmigung</div>
+              <div class="info-text">Alle Urlaubsanträge müssen vom direkten Vorgesetzten genehmigt werden.</div>
+            </div>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </ion-content>
+</div>

@@ -1,0 +1,134 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Arbeitsscheine</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openWorkorderAssignmentModal()">
+        <ion-icon slot="icon-only" name="people"></ion-icon>
+      </ion-button>
+      <ion-button [routerLink]="['/apps/work-tickets/templates']">
+        <ion-icon slot="icon-only" name="document-text"></ion-icon>
+      </ion-button>
+      <ion-button (click)="openCreateModal()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Suchen..."
+      [value]="searchTerm"
+      (ionInput)="onSearchChanged($event)"
+      show-clear-button="focus">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="filter-section">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12" size-md="4">
+          <ion-item lines="none">
+            <ion-select
+              label="Status"
+              [value]="statusFilter"
+              (ionChange)="onStatusFilterChanged($event)"
+              interface="popover">
+              <ion-select-option value="all">Alle</ion-select-option>
+              <ion-select-option value="draft">Entwurf</ion-select-option>
+              <ion-select-option value="in_progress">In Bearbeitung</ion-select-option>
+              <ion-select-option value="completed">Abgeschlossen</ion-select-option>
+              <ion-select-option value="signed">Unterschrieben</ion-select-option>
+              <ion-select-option value="invoiced">Abgerechnet</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-item>
+        <ion-label>Lade Arbeitsscheine...</ion-label>
+      </ion-item>
+    </div>
+  } @else {
+    @if (filteredOrders.length === 0) {
+      <div class="empty-state">
+        <ion-icon name="document-text" color="medium"></ion-icon>
+        <h2>Keine Arbeitsscheine gefunden</h2>
+        <p>Erstelle deinen ersten Arbeitsschein</p>
+        <ion-button (click)="openCreateModal()">
+          <ion-icon slot="start" name="add"></ion-icon>
+          Neuer Arbeitsschein
+        </ion-button>
+      </div>
+    } @else {
+      <ion-list>
+        @for (order of filteredOrders; track order.id) {
+          <ion-card (click)="openDetails(order)" button>
+            <ion-card-header>
+              <div class="card-header-row">
+                <div>
+                  <ion-card-title>{{ order.order_number }}</ion-card-title>
+                  <p class="client-name">{{ order.client_name }}</p>
+                </div>
+                <ion-badge [color]="getStatusColor(order.status)">
+                  {{ order.status_display }}
+                </ion-badge>
+              </div>
+            </ion-card-header>
+            
+            <ion-card-content>
+              <div class="order-details">
+                <div class="detail-row">
+                  <ion-icon name="business" color="medium"></ion-icon>
+                  <span>{{ order.work_type }}</span>
+                </div>
+                
+                @if (order.work_object_name) {
+                  <div class="detail-row">
+                    <ion-icon name="location" color="medium"></ion-icon>
+                    <span>{{ order.work_object_name }}</span>
+                  </div>
+                }
+                
+                <div class="detail-row">
+                  <ion-icon name="calendar" color="medium"></ion-icon>
+                  <span>{{ formatDateRange(order.start_date, order.end_date) }}</span>
+                </div>
+                
+                <div class="detail-row">
+                  <ion-icon name="time" color="medium"></ion-icon>
+                  <span>{{ order.work_days }} Arbeitstage</span>
+                </div>
+                
+                @if (order.assigned_to_details) {
+                  <div class="detail-row">
+                    <ion-icon name="person" color="medium"></ion-icon>
+                    <span>{{ order.assigned_to_details.full_name }}</span>
+                  </div>
+                }
+              </div>
+            </ion-card-content>
+          </ion-card>
+        }
+      </ion-list>
+    }
+  }
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openCreateModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

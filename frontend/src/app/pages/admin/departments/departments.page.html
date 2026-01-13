@@ -1,0 +1,75 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Abteilungen verwalten</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateModal()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar>
+    <ion-searchbar
+      (ionInput)="onSearchChange($event)"
+      placeholder="Abteilung suchen..."
+      animated
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Abteilungen...</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (dept of filteredDepartments; track dept.id) {
+        <ion-item>
+          <ion-icon name="business-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <h2>{{ dept.name }}</h2>
+            <p>Code: {{ dept.code }}</p>
+            @if (dept.description) {
+              <p>{{ dept.description }}</p>
+            }
+            @if (dept.parent_name) {
+              <p><small>Übergeordnet: {{ dept.parent_name }}</small></p>
+            }
+          </ion-label>
+          
+          <div slot="end" class="action-buttons">
+            <ion-badge color="primary">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ dept.member_count }}
+            </ion-badge>
+            
+            <ion-button fill="clear" (click)="openEditModal(dept)">
+              <ion-icon name="create-outline" color="primary"></ion-icon>
+            </ion-button>
+            
+            <ion-button fill="clear" (click)="deleteDepartment(dept)">
+              <ion-icon name="trash-outline" color="danger"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+      }
+      
+      @if (filteredDepartments.length === 0) {
+        <ion-item>
+          <ion-label color="medium" class="ion-text-center">
+            @if (searchTerm) {
+              Keine Abteilungen für "{{ searchTerm }}" gefunden
+            } @else {
+              Keine Abteilungen vorhanden. Klicken Sie auf + um eine zu erstellen.
+            }
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>

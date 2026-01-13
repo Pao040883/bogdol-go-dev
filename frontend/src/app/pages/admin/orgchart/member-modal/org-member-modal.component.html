@@ -1,0 +1,124 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? 'Mitglied bearbeiten' : 'Mitglied hinzufügen' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="!isFormValid()" [strong]="true" color="primary">
+        Speichern
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form #memberForm="ngForm">
+    <!-- User Selection -->
+    <ion-item>
+      <ion-select
+        label="Benutzer"
+        labelPlacement="stacked"
+        [(ngModel)]="formData.user"
+        name="user"
+        [disabled]="isEditMode"
+        placeholder="Benutzer auswählen"
+        required
+      >
+        @for (user of availableUsers; track user.id) {
+          <ion-select-option [value]="user.id">
+            {{ user.first_name }} {{ user.last_name }} ({{ user.username }})
+          </ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+
+    <!-- Role Selection -->
+    <ion-item>
+      <ion-select
+        label="Rolle"
+        labelPlacement="stacked"
+        [(ngModel)]="formData.role"
+        name="role"
+        placeholder="Rolle auswählen"
+        required
+      >
+        @for (role of sortedRoles; track role.id) {
+          <ion-select-option [value]="role.id">
+            {{ role.name }} (Level {{ role.hierarchy_level }})
+          </ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+
+    <!-- Position Title -->
+    <ion-item>
+      <ion-input
+        label="Positionsbezeichnung (optional)"
+        labelPlacement="stacked"
+        [(ngModel)]="formData.position_title"
+        name="position_title"
+        placeholder="z.B. Senior Developer"
+      ></ion-input>
+    </ion-item>
+
+    <!-- Reports To -->
+    <ion-item>
+      <ion-select
+        label="Berichtet an"
+        labelPlacement="stacked"
+        [(ngModel)]="formData.reports_to"
+        name="reports_to"
+        placeholder="Keine Auswahl"
+      >
+        <ion-select-option [value]="null">Niemand</ion-select-option>
+        @for (member of potentialSupervisors; track member.id) {
+          <ion-select-option [value]="member.id">
+            {{ member.user_data.full_name }} - {{ member.role_data.name }}
+          </ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+
+    <!-- Primary Department -->
+    <ion-item>
+      <ion-checkbox [(ngModel)]="formData.is_primary" name="is_primary">
+        Primäre Abteilung
+      </ion-checkbox>
+    </ion-item>
+
+    <!-- Staff Position -->
+    <ion-item>
+      <ion-checkbox [(ngModel)]="formData.is_staff_position" name="is_staff_position">
+        Stabsstelle (wird horizontal neben GF im Organigramm angezeigt)
+      </ion-checkbox>
+    </ion-item>
+
+    <!-- Active Status -->
+    <ion-item>
+      <ion-checkbox [(ngModel)]="formData.is_active" name="is_active">
+        Aktiv
+      </ion-checkbox>
+    </ion-item>
+  </form>
+
+  <!-- Info Box -->
+  <ion-card class="info-box">
+    <ion-card-content>
+      <p class="ion-no-margin">
+        <ion-icon name="information-circle-outline" color="primary"></ion-icon>
+        <strong>Abteilung:</strong> {{ department.name }}
+      </p>
+      @if (selectedRole) {
+        <p class="ion-no-margin ion-margin-top">
+          <ion-badge [color]="getRoleBadgeColor(selectedRole.hierarchy_level)">
+            Level {{ selectedRole.hierarchy_level }}
+          </ion-badge>
+          <span class="ion-margin-start">{{ selectedRole.description }}</span>
+        </p>
+      }
+    </ion-card-content>
+  </ion-card>
+</ion-content>

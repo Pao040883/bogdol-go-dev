@@ -1,0 +1,21 @@
+ion-item {
+  --border-radius: 16px;
+  --background-hover: #ffffff;
+}
+
+ion-icon {
+  font-size: 3em;
+}
+
+@media (min-width: 1200px) {
+  ion-col {
+    max-width: 400px !important;
+    min-width: 400px !important;
+  }
+
+ion-item {
+    --inner-padding-top: 32px;
+    --inner-padding-bottom: 32px;
+    --padding-start: 48px
+  }
+}

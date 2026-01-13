@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Arbeitsschein-Zuweisungen verwalten</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (loading()) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Zuweisungen...</p>
+    </div>
+  } @else {
+    <div class="modal-content">
+      <div class="info-section">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <p>
+          Wählen Sie die Service Manager aus, deren Arbeitsscheine Sie bearbeiten möchten.
+          Diese werden Ihnen automatisch zugewiesen.
+        </p>
+      </div>
+      
+      <div class="summary">
+        <h3>Aktuelle Zuweisungen: {{ getAssignmentCount() }}</h3>
+      </div>
+      
+      <ion-list>
+        @for (manager of serviceManagers(); track manager.id) {
+          <ion-item>
+            <ion-checkbox
+              [checked]="isAssigned(manager.id)"
+              (ionChange)="toggleAssignment(manager, $event)"
+              slot="start">
+            </ion-checkbox>
+            
+            <ion-label>
+              <h2>{{ manager.name }}</h2>
+              <p>{{ manager.email }}</p>
+              @if (manager.department) {
+                <p class="department">
+                  <ion-icon name="business-outline"></ion-icon>
+                  {{ manager.department.name }}
+                </p>
+              }
+              @if (manager.specialty) {
+                <p class="specialty">
+                  <ion-icon name="construct-outline"></ion-icon>
+                  {{ manager.specialty.name }}
+                </p>
+              }
+            </ion-label>
+          </ion-item>
+        }
+        
+        @if (serviceManagers().length === 0) {
+          <ion-item>
+            <ion-label class="ion-text-center">
+              <p>Keine Service Manager gefunden</p>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </div>
+  }
+</ion-content>

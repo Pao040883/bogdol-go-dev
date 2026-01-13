@@ -1,0 +1,72 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-img src="./assets/logos/logo-bogdol-go.svg" class="ion-hide-lg-up"></ion-img>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" color="primary" class="ion-align-items-center">
+  <div class="login-screen">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <ion-img src="./assets/logos/logo-bogdol-go.svg" class="ion-hide-lg-down go-logo"></ion-img>
+      <ion-card class="login-input" color="primary">
+        <ion-card-header>
+          <ion-card-subtitle>Anmeldung</ion-card-subtitle>
+          <ion-card-title><h1>Herzlich Willkommen</h1></ion-card-title>
+          <ion-card-subtitle>
+            Benutzername und Passwort muss Ihnen Ihr Systemadministrator zur
+            Verfügung stellen.
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content class="login-form ion-padding">
+          <ion-item lines="none">
+            <ion-input
+              class="user-field"
+              formControlName="username"
+              required
+              label="Benutzername"
+              labelPlacement="stacked"
+              clearInput="true"
+              type="text"
+            ></ion-input>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-input
+              formControlName="password"
+              required
+              class="password-field"
+              type="password"
+              label="Passwort"
+              labelPlacement="stacked"
+              matTooltip="Bitte Buchstaben, Zahlen und Sonderzeichen verwenden"
+            >
+              <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+            </ion-input>
+          </ion-item>
+          @if (error()) {
+          <ion-item lines="none" color="primary">
+            <ion-text color="danger" class="ion-padding-top">
+              <p>{{ error() }}</p>
+            </ion-text>
+          </ion-item>
+          }
+        </ion-card-content>
+        <ion-button type="submit" expand="block" [disabled]="loginForm.invalid" matTooltip="Melde dich an"
+          ><ion-img src="./assets/logos/logo-bogdol-go.svg"></ion-img
+        ></ion-button>
+      </ion-card>
+    </form>
+    <ion-button slot="end" fill="clear" color="light" [routerLink]="['/reset-password']" routerLinkActive="router-link-active" matTooltip="Lass dir ein neues Passwort zusenden" 
+      >Passwort vergessen</ion-button
+    >
+<!-- <ion-popover trigger="hover-trigger" triggerAction="hover" showBackdrop="false">
+  <ng-template>
+    <ion-content class="ion-padding">Lass dir ein neues Passwort zusenden</ion-content>
+  </ng-template>
+</ion-popover> -->
+  </div>
+</ion-content>
+<ion-footer [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-img src="./assets/logos/logo-weiß.svg"></ion-img>
+  </ion-toolbar>
+</ion-footer>

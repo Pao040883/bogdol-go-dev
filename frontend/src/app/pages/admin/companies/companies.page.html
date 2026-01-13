@@ -1,0 +1,84 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Gesellschaften verwalten</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateModal()">
+        <ion-icon name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <ion-toolbar>
+    <ion-searchbar
+      (ionInput)="onSearchChange($event)"
+      placeholder="Gesellschaft suchen..."
+      animated
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Gesellschaften...</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (company of filteredCompanies; track company.id) {
+        <ion-item>
+          <ion-icon name="briefcase-outline" slot="start" color="success"></ion-icon>
+          <ion-label>
+            <h2>{{ company.name }}</h2>
+            <p>Code: {{ company.code }}</p>
+            @if (company.description) {
+              <p>{{ company.description }}</p>
+            }
+            @if (company.address) {
+              <p><small>{{ company.address }}</small></p>
+            }
+          </ion-label>
+          
+          <div slot="end" class="action-buttons">
+            @if (company.department_count !== undefined) {
+              <ion-badge color="secondary">
+                <ion-icon name="business-outline"></ion-icon>
+                {{ company.department_count }}
+              </ion-badge>
+            }
+            
+            @if (company.member_count !== undefined) {
+              <ion-badge color="primary">
+                <ion-icon name="people-outline"></ion-icon>
+                {{ company.member_count }}
+              </ion-badge>
+            }
+            
+            <ion-button fill="clear" (click)="openEditModal(company)">
+              <ion-icon name="create-outline" color="primary"></ion-icon>
+            </ion-button>
+            
+            <ion-button fill="clear" (click)="deleteCompany(company)">
+              <ion-icon name="trash-outline" color="danger"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+      }
+      
+      @if (filteredCompanies.length === 0) {
+        <ion-item>
+          <ion-label color="medium" class="ion-text-center">
+            @if (searchTerm) {
+              Keine Gesellschaften für "{{ searchTerm }}" gefunden
+            } @else {
+              Keine Gesellschaften vorhanden. Klicken Sie auf + um eine zu erstellen.
+            }
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>

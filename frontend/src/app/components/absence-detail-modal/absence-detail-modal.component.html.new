@@ -1,0 +1,164 @@
+<ion-modal [isOpen]="isOpen" (didDismiss)="closeModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Abwesenheit Details</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()" fill="clear">
+            <ion-icon name="close" color="light"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="modal-content">
+      <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
+
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <div class="hero-content">
+          <ion-icon [name]="getAbsenceIcon()" class="hero-icon"></ion-icon>
+          <h1 class="hero-title">{{ absence?.absence_type?.display_name || absence?.reason }}</h1>
+          <ion-badge [color]="getStatusColor(absence?.status || '')" class="hero-badge">
+            {{ getStatusText(absence?.status || '') }}
+          </ion-badge>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Zeitraum Card -->
+        <ion-card class="info-card">
+          <ion-card-content>
+            <div class="card-header">
+              <ion-icon name="calendar" color="primary"></ion-icon>
+              <h3>Zeitraum</h3>
+            </div>
+            <div class="date-range">
+              <span class="start-date">{{ formatDate(absence?.start_date || '') }}</span>
+              <ion-icon name="arrow-forward" color="medium"></ion-icon>
+              <span class="end-date">{{ formatDate(absence?.end_date || '') }}</span>
+            </div>
+            <p class="duration">{{ getDurationText() }}</p>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Details Card -->
+        <ion-card class="info-card" *ngIf="absence?.representative || absence?.reason">
+          <ion-card-content>
+            <div class="card-header">
+              <ion-icon name="information-circle" color="primary"></ion-icon>
+              <h3>Details</h3>
+            </div>
+            
+            <div class="detail-item" *ngIf="absence?.reason">
+              <span class="label">Grund:</span>
+              <span class="value">{{ absence.reason }}</span>
+            </div>
+            
+            <div class="detail-item" *ngIf="absence?.representative">
+              <span class="label">Vertretung:</span>
+              <span class="value">{{ absence.representative.first_name }} {{ absence.representative.last_name }}</span>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Kommentare Section -->
+        <ion-card class="comments-card">
+          <ion-card-header>
+            <ion-card-title>
+              <div class="comments-header">
+                <ion-icon name="chatbubbles" color="primary"></ion-icon>
+                <span>Kommunikation</span>
+                <ion-badge color="primary" *ngIf="comments().length > 0">{{ comments().length }}</ion-badge>
+              </div>
+            </ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <!-- Comment Form -->
+            <form [formGroup]="commentForm" (ngSubmit)="submitComment()" class="comment-form">
+              <div class="form-controls">
+                <ion-item lines="none" class="comment-input">
+                  <ion-textarea
+                    formControlName="comment"
+                    placeholder="Kommentar hinzufügen..."
+                    autoGrow="true"
+                    rows="2">
+                  </ion-textarea>
+                </ion-item>
+                
+                <div class="form-actions">
+                  <ion-select formControlName="type" placeholder="Typ" interface="popover" class="comment-type">
+                    <ion-select-option value="employee">Mitarbeiter</ion-select-option>
+                    <ion-select-option value="supervisor">Vorgesetzter</ion-select-option>
+                    <ion-select-option value="hr">HR</ion-select-option>
+                  </ion-select>
+                  
+                  <ion-button 
+                    type="submit" 
+                    [disabled]="commentForm.invalid || isSubmittingComment()"
+                    size="small"
+                    fill="solid">
+                    <ion-icon name="send" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+            </form>
+
+            <!-- Comments List -->
+            <div class="comments-list" *ngIf="comments().length > 0">
+              <div class="comment-filters">
+                <ion-segment value="all" (ionChange)="filterComments($event)">
+                  <ion-segment-button value="all">
+                    <ion-label>Alle</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="employee">
+                    <ion-label>Mitarbeiter</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="supervisor">
+                    <ion-label>Vorgesetzter</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="hr">
+                    <ion-label>HR</ion-label>
+                  </ion-segment-button>
+                </ion-segment>
+              </div>
+
+              <div class="comments">
+                @for(comment of filteredComments(); track comment.id) {
+                  <div class="comment-item" [attr.data-type]="comment.comment_type">
+                    <div class="comment-header">
+                      <div class="comment-meta">
+                        <ion-chip 
+                          [color]="getCommentTypeColor(comment.comment_type)" 
+                          size="small">
+                          {{ getCommentTypeLabel(comment.comment_type) }}
+                        </ion-chip>
+                        <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
+                      </div>
+                      <ion-badge 
+                        *ngIf="comment.is_internal" 
+                        color="warning" 
+                        size="small">
+                        Intern
+                      </ion-badge>
+                    </div>
+                    <p class="comment-text">{{ comment.comment }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="no-comments" *ngIf="comments().length === 0">
+              <ion-icon name="chatbubbles-outline" color="medium"></ion-icon>
+              <p>Noch keine Kommentare vorhanden</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

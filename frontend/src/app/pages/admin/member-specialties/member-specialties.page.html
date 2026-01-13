@@ -1,0 +1,135 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <div *ngIf="member()">
+        Fachbereiche: {{ member()?.user_data?.first_name }} {{ member()?.user_data?.last_name }}
+      </div>
+      <div *ngIf="!member()">Fachbereiche verwalten</div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAddModal()">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Member Info -->
+  <ion-toolbar *ngIf="member()">
+    <ion-chip color="primary">
+      <ion-icon name="business-outline"></ion-icon>
+      <ion-label>{{ member()?.department_name }}</ion-label>
+    </ion-chip>
+    <ion-chip color="secondary">
+      <ion-icon name="ribbon-outline"></ion-icon>
+      <ion-label>{{ member()?.role_name }}</ion-label>
+    </ion-chip>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Loading State -->
+  <div *ngIf="isLoading()" class="loading-container">
+    <ion-spinner></ion-spinner>
+    <p>Lade Fachbereiche...</p>
+  </div>
+
+  <!-- Specialty List -->
+  <ion-list *ngIf="!isLoading()">
+    <ion-item
+      *ngFor="let ms of memberSpecialties()"
+      [class.primary-specialty]="ms.is_primary"
+      [class.inactive]="!ms.is_active">
+      
+      <ion-icon
+        slot="start"
+        [name]="ms.is_primary ? 'star' : 'star-outline'"
+        [color]="ms.is_primary ? 'warning' : 'medium'"
+        (click)="togglePrimary(ms)">
+      </ion-icon>
+
+      <ion-label>
+        <h2>
+          <strong>{{ ms.specialty_data?.name }}</strong>
+          <ion-badge color="medium" class="code-badge">
+            {{ ms.specialty_data?.code }}
+          </ion-badge>
+          <ion-badge *ngIf="ms.is_primary" color="warning">Primär</ion-badge>
+          <ion-badge *ngIf="!ms.is_active" color="danger">Inaktiv</ion-badge>
+        </h2>
+        
+        <p *ngIf="ms.specialty_data?.description">
+          {{ ms.specialty_data?.description }}
+        </p>
+
+        <div class="specialty-details">
+          <ion-chip [color]="getProficiencyColor(ms.proficiency_level)" size="small">
+            <ion-icon name="trending-up-outline"></ion-icon>
+            <ion-label>{{ getProficiencyLabel(ms.proficiency_level) }}</ion-label>
+          </ion-chip>
+
+          <ion-chip *ngIf="ms.valid_from" color="tertiary" size="small">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <ion-label>Ab {{ ms.valid_from | date:'dd.MM.yyyy' }}</ion-label>
+          </ion-chip>
+
+          <ion-chip *ngIf="ms.valid_until" color="danger" size="small" outline>
+            <ion-icon name="calendar-outline"></ion-icon>
+            <ion-label>Bis {{ ms.valid_until | date:'dd.MM.yyyy' }}</ion-label>
+          </ion-chip>
+        </div>
+
+        <p *ngIf="ms.notes" class="notes">
+          <ion-icon name="document-text-outline" size="small"></ion-icon>
+          {{ ms.notes }}
+        </p>
+      </ion-label>
+
+      <ion-buttons slot="end">
+        <ion-button (click)="openEditModal(ms)" fill="clear" size="small">
+          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+        </ion-button>
+        <ion-button (click)="deleteMemberSpecialty(ms)" fill="clear" color="danger" size="small">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-item>
+
+    <!-- Empty State -->
+    <div *ngIf="memberSpecialties().length === 0" class="empty-state">
+      <ion-icon name="briefcase-outline" size="large" color="medium"></ion-icon>
+      <h3>Keine Fachbereiche zugeordnet</h3>
+      <p>Fügen Sie Fachbereiche hinzu, um die Kompetenzen zu definieren</p>
+      <ion-button (click)="openAddModal()">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Fachbereich hinzufügen
+      </ion-button>
+    </div>
+  </ion-list>
+
+  <!-- Info Card -->
+  <ion-card *ngIf="!isLoading() && memberSpecialties().length > 0">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="information-circle-outline"></ion-icon>
+        Hinweise
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ul>
+        <li><strong>Primärer Fachbereich:</strong> Klicken Sie auf den Stern, um einen Fachbereich als primär zu markieren</li>
+        <li><strong>Kompetenzstufen:</strong> Grundkenntnisse → Fortgeschritten → Erweitert → Experte</li>
+        <li><strong>Gültigkeit:</strong> Optional können Sie einen Zeitraum definieren</li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- FAB -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+    <ion-fab-button (click)="openAddModal()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

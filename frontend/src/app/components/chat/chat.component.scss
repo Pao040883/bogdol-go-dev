@@ -1,0 +1,471 @@
+// Chat Component Styles
+ion-header {
+  .e2e-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    background: var(--ion-color-success);
+    color: white;
+    border-radius: 0.75rem;
+    margin-left: 0.5rem;
+    
+    ion-icon {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.messages-container {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 100%;
+
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+    
+    p {
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .message {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+    
+    &.sent {
+      flex-direction: row-reverse;
+      
+      .message-bubble {
+        background: var(--ion-color-primary);
+        color: white;
+        
+        .message-header {
+          .sender-name {
+            color: rgba(255, 255, 255, 0.8);
+          }
+          
+          .timestamp {
+            color: rgba(255, 255, 255, 0.7);
+          }
+        }
+        
+        .message-content p {
+          color: white;
+        }
+      }
+    }
+    
+    &.received {
+      flex-direction: row;
+      
+      .message-bubble {
+        background: var(--ion-color-light);
+        color: var(--ion-color-dark);
+      }
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .avatar-initials {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ion-color-primary);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+    }
+
+    .message-bubble {
+      max-width: 70%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      
+      .message-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: baseline !important;
+        margin-bottom: 0.25rem !important;
+        gap: 0.75rem !important;
+        
+        .sender-name {
+          font-size: 0.75rem !important;
+          font-weight: 600 !important;
+          color: var(--ion-color-medium) !important;
+          flex-shrink: 0 !important;
+        }
+        
+        .encryption-icon {
+          font-size: 0.75rem;
+          color: var(--ion-color-success);
+          margin-left: 0.25rem;
+          flex-shrink: 0;
+        }
+        
+        .timestamp {
+          font-size: 0.65rem !important;
+          color: var(--ion-color-medium) !important;
+          white-space: nowrap !important;
+          margin-left: auto !important;
+        }
+      }
+
+      .reply-preview {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        
+        small {
+          font-weight: 600;
+        }
+        
+        p {
+          margin: 0.25rem 0 0;
+          opacity: 0.8;
+        }
+      }
+
+      .message-content {
+        p {
+          margin: 0 !important;
+          line-height: 1.4 !important;
+          word-wrap: break-word !important;
+          font-size: 1rem !important;
+          color: var(--ion-color-dark) !important;
+        }
+        
+        .file-message {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 0.75rem;
+          
+          ion-icon {
+            font-size: 1.5rem;
+          }
+          
+          a {
+            color: inherit;
+            text-decoration: none;
+            
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+          
+          small {
+            opacity: 0.7;
+          }
+        }
+        
+        .image-message {
+          max-width: 100%;
+          border-radius: 0.5rem;
+          margin-top: 0.5rem;
+        }
+      }
+
+      .message-footer {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.4rem;
+        font-size: 0.7rem;
+        opacity: 0.7;
+        
+        .edited-badge {
+          font-style: italic;
+        }
+      }
+
+      .reactions {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+        margin-top: 0.25rem;
+        
+        .reaction {
+          background: rgba(0, 0, 0, 0.05);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          padding: 0.25rem 0.5rem;
+          border-radius: 1rem;
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          
+          &:hover:not(:disabled) {
+            background: rgba(0, 0, 0, 0.1);
+          }
+          
+          &.user-reacted {
+            background: var(--ion-color-primary-tint);
+            border-color: var(--ion-color-primary);
+            cursor: pointer;
+          }
+          
+          &:disabled:not(.user-reacted) {
+            cursor: default;
+            opacity: 0.8;
+          }
+          
+          small {
+            margin-left: 0.25rem;
+            opacity: 0.7;
+          }
+        }
+      }
+
+      .quick-reactions {
+        display: flex;
+        gap: 0.25rem;
+        margin-top: 0.25rem;
+        opacity: 0;
+        transition: opacity 0.2s;
+        
+        .quick-reaction-btn {
+          background: none;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          border-radius: 50%;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 14px;
+          transition: all 0.2s;
+          padding: 0;
+          
+          &:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: scale(1.1);
+          }
+        }
+      }
+
+      // Show quick reactions on hover
+      &:hover .quick-reactions {
+        opacity: 1;
+      }
+
+      &.deleted {
+        opacity: 0.6;
+        
+        .message-content {
+          font-style: italic;
+          color: var(--ion-color-medium);
+        }
+      }
+    }
+  }
+
+  .typing-indicator {
+    padding: 0.5rem;
+    
+    p {
+      color: var(--ion-color-medium);
+      font-style: italic;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+}
+
+ion-footer {
+  .input-area {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    align-items: center;
+    
+    app-emoji-picker {
+      display: flex;
+      align-items: center;
+    }
+    
+    ion-textarea {
+      flex: 1;
+    }
+    
+    ion-button {
+      margin: 0;
+    }
+  }
+}
+
+// ========================================================================
+// ABSENCE MESSAGE CARDS
+// ========================================================================
+
+.absence-request-card,
+.absence-decision-card {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb), 0.05);
+  
+  .absence-header,
+  .decision-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    
+    ion-icon {
+      font-size: 1.25rem;
+      color: var(--ion-color-primary);
+    }
+    
+    strong {
+      font-size: 1rem;
+      color: var(--ion-color-dark);
+    }
+  }
+  
+  .absence-details {
+    font-size: 0.9rem;
+    
+    p {
+      margin: 0.25rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      ion-icon {
+        font-size: 1rem;
+        color: var(--ion-color-medium);
+        flex-shrink: 0;
+      }
+    }
+    
+    .status-badge {
+      margin-top: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-block;
+      
+      &.status-pending {
+        background: var(--ion-color-warning);
+        color: white;
+      }
+      
+      &.status-approved {
+        background: var(--ion-color-success);
+        color: white;
+      }
+      
+      &.status-rejected {
+        background: var(--ion-color-danger);
+        color: white;
+      }
+      
+      &.status-revision_requested {
+        background: var(--ion-color-tertiary);
+        color: white;
+      }
+    }
+  }
+  
+  ion-button {
+    margin-top: 0.75rem;
+  }
+}
+
+.absence-decision-card {
+  .decision-header {
+    &.approved {
+      ion-icon {
+        color: var(--ion-color-success);
+      }
+      
+      strong {
+        color: var(--ion-color-success);
+      }
+    }
+    
+    &.rejected {
+      ion-icon {
+        color: var(--ion-color-danger);
+      }
+      
+      strong {
+        color: var(--ion-color-danger);
+      }
+    }
+  }
+  
+  .decided-by {
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+    margin: 0.25rem 0;
+  }
+  
+  .rejection-reason {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 0.25rem;
+    
+    strong {
+      color: var(--ion-color-danger);
+    }
+  }
+}
+
+// Sent messages (by current user) - different styling
+.message.sent {
+  .absence-request-card,
+  .absence-decision-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-left-color: rgba(255, 255, 255, 0.5);
+    
+    .absence-header,
+    .decision-header {
+      ion-icon,
+      strong {
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+    
+    .absence-details {
+      p {
+        color: rgba(255, 255, 255, 0.8);
+        
+        ion-icon {
+          color: rgba(255, 255, 255, 0.6);
+        }
+      }
+    }
+  }
+}

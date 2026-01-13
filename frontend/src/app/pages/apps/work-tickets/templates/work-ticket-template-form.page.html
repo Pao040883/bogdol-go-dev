@@ -1,0 +1,112 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/apps/work-tickets/templates"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ isEditMode ? 'Vorlage bearbeiten' : 'Neue Vorlage' }}</ion-title>
+    <ion-buttons slot="end">
+      @if (isEditMode) {
+        <ion-button (click)="deleteTemplate()">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-button>
+      }
+      <ion-button (click)="saveTemplate()">
+        <ion-icon slot="icon-only" name="save"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-item>
+        <ion-label>Lade Vorlage...</ion-label>
+      </ion-item>
+    </div>
+  } @else {
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Vorlagenname *</ion-label>
+        <ion-input
+          [(ngModel)]="template.name"
+          placeholder="z.B. Monatliche Wartung Standort A"
+          required>
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Kunde</ion-label>
+        <ion-select
+          [(ngModel)]="template.client"
+          placeholder="Kunde auswählen"
+          (ionChange)="onClientChange()">
+          @for (client of clients; track client.id) {
+            <ion-select-option [value]="client.id">{{ client.name }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-button fill="clear" (click)="createNewClient()">
+          + Neuen Kunden anlegen
+        </ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Objekt</ion-label>
+        <ion-select
+          [(ngModel)]="template.work_object"
+          placeholder="Objekt auswählen"
+          [disabled]="!template.client">
+          @for (obj of workObjects; track obj.id) {
+            <ion-select-option [value]="obj.id">{{ obj.name }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      @if (template.client) {
+        <ion-item>
+          <ion-button fill="clear" (click)="createNewObject()">
+            + Neues Objekt anlegen
+          </ion-button>
+        </ion-item>
+      }
+
+      <ion-item>
+        <ion-label position="stacked">Arbeitstyp *</ion-label>
+        <ion-input
+          [(ngModel)]="template.work_type"
+          placeholder="z.B. Wartung, Reparatur, Inspektion"
+          required>
+        </ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Arbeitstage</ion-label>
+        <ion-input
+          [(ngModel)]="template.work_days"
+          type="number"
+          min="1"
+          placeholder="1">
+        </ion-input>
+        <ion-note slot="helper">Anzahl der geplanten Arbeitstage</ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Beschreibung</ion-label>
+        <ion-textarea
+          [(ngModel)]="template.description"
+          rows="6"
+          placeholder="Beschreibung der wiederkehrenden Arbeiten...">
+        </ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <div class="form-footer">
+      <ion-note>
+        * Pflichtfelder
+      </ion-note>
+    </div>
+  }
+</ion-content>

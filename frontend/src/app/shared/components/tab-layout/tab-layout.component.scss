@@ -1,0 +1,55 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+ion-content {
+  --background: var(--ion-background-color);
+}
+
+ion-tab-bar {
+  --border: 1px solid var(--ion-color-light-shade);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+ion-tab-button {
+  --color: var(--ion-color-medium);
+  --color-selected: var(--ion-color-primary-contrast);
+  font-size: 0.75rem;
+  
+  ion-icon {
+    font-size: 1.5rem;
+    margin-bottom: 2px;
+  }
+  
+  &:hover:not([disabled]) {
+    --color: var(--ion-color-primary-shade);
+  }
+  
+  &[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// Desktop optimizations
+@media (min-width: 768px) {
+  ion-tab-button {
+    font-size: 0.875rem;
+    
+    ion-icon {
+      font-size: 1.75rem;
+      margin-bottom: 4px;
+    }
+  }
+}
+
+// Ensure tabs take full height
+ion-tabs {
+  height: 100%;
+}
+
+ion-tab {
+  height: 100%;
+  overflow: auto;
+}

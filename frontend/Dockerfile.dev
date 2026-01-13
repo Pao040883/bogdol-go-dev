@@ -1,0 +1,18 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Package files kopieren
+COPY package*.json ./
+
+# Dependencies installieren (inkl. Dev-Dependencies)
+RUN npm ci
+
+# Application Code wird als Volume gemountet!
+# COPY . .  <-- Nicht im Dev-Mode!
+
+# Port freigeben
+EXPOSE 4200
+
+# Development Server mit Hot-Reload
+CMD ["npm", "start", "--", "--host", "0.0.0.0", "--poll", "2000"]

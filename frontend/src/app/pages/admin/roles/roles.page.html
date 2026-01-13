@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Rollen verwalten</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateModal()">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-searchbar
+      (ionInput)="onSearchChange($event)"
+      placeholder="Rolle suchen..."
+      animated="true"
+      debounce="300"
+    ></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Rollen...</p>
+    </div>
+  } @else {
+    <ion-list class="roles-list">
+      @for (role of filteredRoles; track role.id) {
+        <ion-item lines="full" class="role-item">
+          <div slot="start" class="role-color" [style.background-color]="role.color"></div>
+          <ion-label>
+            <h2>{{ role.name }}</h2>
+            <p>Code: {{ role.code }}</p>
+            @if (role.description) {
+              <p class="description">{{ role.description }}</p>
+            }
+          </ion-label>
+          <div slot="end" class="action-buttons">
+            <ion-badge [color]="getRoleBadgeColor(role.hierarchy_level)">
+              Level {{ role.hierarchy_level }}
+            </ion-badge>
+            <ion-badge color="secondary">
+              {{ role.org_type === 'administration' ? 'Verwaltung' : role.org_type === 'operations' ? 'Einsatzdienst' : 'Beide' }}
+            </ion-badge>
+            <ion-badge color="primary">
+              <ion-icon name="people-outline"></ion-icon>
+              {{ role.member_count }}
+            </ion-badge>
+            <ion-button fill="clear" (click)="openEditModal(role)">
+              <ion-icon name="create-outline" slot="icon-only" color="primary"></ion-icon>
+            </ion-button>
+            <ion-button fill="clear" (click)="deleteRole(role)">
+              <ion-icon name="trash-outline" slot="icon-only" color="danger"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+      } @empty {
+        <div class="empty-state">
+          <ion-icon name="people-outline" size="large"></ion-icon>
+          <p>
+            @if (searchTerm) {
+              Keine Rollen für "{{ searchTerm }}" gefunden
+            } @else {
+              Keine Rollen vorhanden. Klicken Sie auf + um eine zu erstellen.
+            }
+          </p>
+        </div>
+      }
+    </ion-list>
+  }
+</ion-content>

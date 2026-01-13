@@ -1,0 +1,143 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="year-navigation">
+        <ion-button fill="clear" size="small" (click)="previousYear()">
+          <ion-icon slot="icon-only" name="chevron-back"></ion-icon>
+        </ion-button>
+        <span class="year-text">{{ year() }}</span>
+        <ion-button fill="clear" size="small" (click)="nextYear()">
+          <ion-icon slot="icon-only" name="chevron-forward"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openHRAssignmentModal()">
+        <ion-icon slot="icon-only" name="people"></ion-icon>
+      </ion-button>
+      <ion-button (click)="openCreateModal()">
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="absences-container">
+    
+    <!-- Top Section: Statistics Table + Vacation Card -->
+    <div class="top-section">
+      <!-- Compact Statistics Table -->
+      <div class="stats-table-container">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th>Art</th>
+              <th class="text-center">Tage gesamt</th>
+              <th class="text-center">Anzeigen</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(stat of getAbsenceTypeStats(); track stat.type) {
+              <tr>
+                <td>
+                  <div class="type-cell">
+                    <ion-icon [name]="stat.icon" [style.color]="stat.darkColor"></ion-icon>
+                    <span>{{ stat.displayName }}</span>
+                  </div>
+                </td>
+                <td class="text-center bold-count">{{ stat.count }}</td>
+                <td class="text-center">
+                  <ion-toggle 
+                    [checked]="stat.visible" 
+                    (ionChange)="toggleAbsenceTypeVisibility(stat.type)"
+                    color="primary">
+                  </ion-toggle>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Vacation Summary Card -->
+      <div class="vacation-summary-card">
+        <div class="vacation-icon">
+          <ion-icon name="sunny"></ion-icon>
+        </div>
+        <div class="vacation-info">
+          <div class="vacation-title">Urlaub {{ year() }}</div>
+          <div class="vacation-subtitle">{{ vacationStats().remaining }} verbleibend (von {{ vacationStats().totalAvailable }} Tagen)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Year Calendar Grid -->
+    <div class="calendar-grid">
+      @for(month of getMonthsData(); track month.monthIndex) {
+        <div class="month-card">
+          <div class="month-header">
+            <span class="month-name">{{ month.name }}</span>
+            @if(month.absenceStats.length > 0) {
+              <div class="month-absence-stats">
+                @for(stat of month.absenceStats; track stat.type) {
+                  <div class="absence-stat-item">
+                    <ion-icon [name]="stat.icon" [style.color]="stat.darkColor"></ion-icon>
+                    <span class="stat-days">{{ stat.days }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          
+          <div class="weekdays">
+            <div class="weekday">Mo</div>
+            <div class="weekday">Di</div>
+            <div class="weekday">Mi</div>
+            <div class="weekday">Do</div>
+            <div class="weekday">Fr</div>
+            <div class="weekday">Sa</div>
+            <div class="weekday">So</div>
+          </div>
+          
+          <div class="days-grid">
+            @for(day of month.days; track $index) {
+              @if(day.currentMonth) {
+                <div 
+                  class="day-cell" 
+                  [class.today]="day.isToday"
+                  [class.weekend]="day.isWeekend"
+                  [class.has-absence]="day.absences.length > 0"
+                  (click)="onDayClick(day)">
+                  <span class="day-number" [style.background-color]="getDayBackgroundColor(day)">{{ day.dayNumber }}</span>
+                  @if(day.absences.length > 1) {
+                    <span class="multi-badge">{{ day.absences.length }}</span>
+                  }
+                </div>
+              } @else {
+                <div class="day-cell empty"></div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <app-absence-create-modal 
+    [isOpen]="showCreateModal()"
+    [editingAbsence]="editingAbsence()"
+    (didDismiss)="closeCreateModal()"
+    (created)="onAbsenceCreated()">
+  </app-absence-create-modal>
+
+  <app-absence-detail-modal
+    [isOpen]="showDetailModal()"
+    [absence]="selectedAbsence()"
+    (didDismiss)="closeDetailModal()">
+  </app-absence-detail-modal>
+</ion-content>

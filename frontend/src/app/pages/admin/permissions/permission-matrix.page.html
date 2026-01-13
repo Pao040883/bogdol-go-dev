@@ -1,0 +1,84 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin/users"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Berechtigungsmatrix</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (loading()) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Berechtigungen...</p>
+    </div>
+  } @else if (error()) {
+    <ion-card color="danger">
+      <ion-card-header>
+        <ion-card-title>Fehler</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        {{ error() }}
+      </ion-card-content>
+    </ion-card>
+  } @else if (matrix()) {
+    <!-- User Info Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          {{ matrix()!.user.first_name }} {{ matrix()!.user.last_name }}
+          @if (matrix()!.user.is_superuser) {
+            <ion-badge color="danger">Superuser</ion-badge>
+          }
+          @if (matrix()!.has_full_access) {
+            <ion-badge color="success">Vollzugriff</ion-badge>
+          }
+        </ion-card-title>
+        <ion-card-subtitle>
+          {{ matrix()!.summary.total_permissions }} Berechtigungen
+        </ion-card-subtitle>
+      </ion-card-header>
+    </ion-card>
+
+    <!-- Permissions List -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Berechtigungen</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-accordion-group>
+          @for (category of permissionCategories(); track category) {
+            <ion-accordion>
+              <ion-item slot="header">
+                <ion-icon [name]="getCategoryIcon(category)" slot="start"></ion-icon>
+                <ion-label>
+                  <h3>{{ category }}</h3>
+                  <p>{{ getPermissionsByCategory(category).length }} Berechtigungen</p>
+                </ion-label>
+              </ion-item>
+              <ion-list slot="content">
+                @for (perm of getPermissionsByCategory(category); track perm.code) {
+                  <ion-item>
+                    <ion-label>
+                      <h3>{{ perm.name }}</h3>
+                      @if (perm.sources.length > 0) {
+                        <p class="sources">
+                          <ion-icon name="git-branch-outline"></ion-icon>
+                          <strong>Quelle:</strong> {{ perm.sources.join(', ') }}
+                        </p>
+                      }
+                    </ion-label>
+                    @if (perm.supports_scope && perm.scope) {
+                      <ion-badge [color]="getScopeColor(perm.scope)" slot="end">{{ perm.scope }}</ion-badge>
+                    }
+                  </ion-item>
+                }
+              </ion-list>
+            </ion-accordion>
+          }
+        </ion-accordion-group>
+      </ion-card-content>
+    </ion-card>
+  }
+</ion-content>

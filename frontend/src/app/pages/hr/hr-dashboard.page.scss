@@ -1,0 +1,379 @@
+// Statistics Cards
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  
+  ion-icon {
+    font-size: 2.5rem;
+  }
+  
+  div {
+    flex: 1;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+// Filter Section
+.filter-section {
+  background: var(--ion-color-light);
+  padding: 8px 0;
+  margin-bottom: 16px;
+
+  ion-item {
+    --background: transparent;
+  }
+
+  .month-picker {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--ion-color-medium);
+    border-radius: 4px;
+    font-size: 14px;
+  }
+}
+
+// Absence Cards
+.absence-card {
+  margin: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+
+  ion-card-content {
+    padding: 16px;
+  }
+
+  .absence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+
+    .absence-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .type-icon {
+        font-size: 2rem;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+      }
+
+      .absence-type {
+        margin: 4px 0 0 0;
+        font-size: 0.9rem;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+
+  .absence-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      color: var(--ion-color-dark);
+
+      ion-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+
+      &.reason {
+        background: var(--ion-color-light);
+        padding: 8px;
+        border-radius: 6px;
+        font-style: italic;
+      }
+    }
+  }
+
+  .absence-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid var(--ion-color-light-shade);
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+
+  ion-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium);
+  }
+}
+
+// Segment Control
+ion-segment {
+  margin: 8px 16px;
+  
+  ion-segment-button {
+    --color: var(--ion-color-medium);
+    --color-checked: var(--ion-color-primary);
+    --border-width: 2px;
+    --border-color: var(--ion-color-light);
+    --border-color-checked: var(--ion-color-primary);
+    
+    ion-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+    
+    ion-badge {
+      margin-left: 8px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  }
+}
+
+// Loading Container
+.loading-container {
+  margin: 16px;
+  
+  ion-item {
+    --background: var(--ion-color-light);
+    --border-radius: 8px;
+  }
+}
+
+// Cards
+ion-card {
+  margin: 8px 16px;
+  
+  ion-card-header {
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      
+      ion-icon {
+        font-size: 20px;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
+}
+
+// Status Container
+.status-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  
+  ion-chip {
+    --background: var(--ion-color-light);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  ion-icon {
+    font-size: 20px;
+  }
+  
+  ion-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-size: 11px;
+    height: 28px;
+  }
+}
+
+// Bulk Actions
+.bulk-actions {
+  margin-bottom: 16px;
+  
+  ion-button {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    height: 44px;
+    font-weight: 600;
+  }
+}
+
+// List Items
+ion-list {
+  ion-item {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --min-height: 72px;
+    
+    ion-label {
+      h2 {
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--ion-color-dark);
+        margin-bottom: 4px;
+      }
+      
+      h3 {
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--ion-color-primary);
+        margin-bottom: 4px;
+      }
+      
+      p {
+        font-size: 13px;
+        color: var(--ion-color-medium);
+        margin: 2px 0;
+        
+        small {
+          font-size: 11px;
+          color: var(--ion-color-medium-shade);
+          font-style: italic;
+        }
+      }
+    }
+    
+    ion-icon[slot="start"] {
+      font-size: 24px;
+      margin-right: 12px;
+    }
+  }
+}
+
+// Conflict Items
+.conflict-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  padding: 4px 0;
+  
+  ion-chip {
+    font-size: 10px;
+    font-weight: bold;
+    height: 20px;
+    min-width: 50px;
+    text-align: center;
+  }
+  
+  .conflict-description {
+    font-size: 12px;
+    color: var(--ion-color-danger);
+    font-weight: 500;
+  }
+}
+
+// Responsive Design
+@media (min-width: 768px) {
+  .stat-card {
+    ion-icon {
+      font-size: 32px;
+      min-width: 32px;
+    }
+    
+    div {
+      h2 {
+        font-size: 28px;
+      }
+      
+      p {
+        font-size: 14px;
+      }
+    }
+  }
+  
+  ion-card {
+    margin: 12px;
+  }
+  
+  ion-searchbar {
+    margin: 12px;
+  }
+  
+  ion-segment {
+    margin: 12px;
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .stat-card {
+    div {
+      h2 {
+        color: var(--ion-color-light);
+      }
+    }
+  }
+  
+  .conflict-description {
+    color: var(--ion-color-danger-tint);
+  }
+}
+
+// Animation Classes
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Toast Styling
+ion-toast {
+  --background: var(--ion-color-dark);
+  --color: var(--ion-color-light);
+  --border-radius: 8px;
+}

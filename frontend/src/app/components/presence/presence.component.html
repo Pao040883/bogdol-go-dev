@@ -1,0 +1,66 @@
+<!-- Presence Component Template -->
+<div class="presence-container">
+  <!-- Header -->
+  <div class="presence-header">
+    <h3>Online Status</h3>
+    <span [ngClass]="{ 'connected': isConnected, 'disconnected': !isConnected }">
+      {{ isConnected ? '🟢' : '🔴' }} {{ isConnected ? 'Verbunden' : 'Getrennt' }}
+    </span>
+  </div>
+
+  <!-- Current Status -->
+  <div class="current-status">
+    <div class="status-selector">
+      <button
+        [class.active]="currentStatus === 'online'"
+        (click)="setOnline()"
+        title="Online"
+      >
+        🟢 Online
+      </button>
+      <button
+        [class.active]="currentStatus === 'away'"
+        (click)="setAway()"
+        title="Abwesend"
+      >
+        🟡 Abwesend
+      </button>
+      <button
+        [class.active]="currentStatus === 'busy'"
+        (click)="setBusy()"
+        title="Beschäftigt"
+      >
+        🔴 Beschäftigt
+      </button>
+    </div>
+
+    <!-- Status Message -->
+    <div class="status-message" *ngIf="statusMessage">
+      <small>{{ statusMessage }}</small>
+    </div>
+  </div>
+
+  <!-- Online Users -->
+  <div class="online-users">
+    <div class="online-header">
+      <h4>Online Benutzer ({{ getOnlineCount() }})</h4>
+    </div>
+
+    <div *ngIf="getOnlineUsersList().length > 0; else noOnlineUsers" class="users-list">
+      <div *ngFor="let user of getOnlineUsersList()" class="user-item">
+        <span class="status-icon">{{ getStatusIcon(user.status) }}</span>
+        <span class="user-name">{{ user.full_name }}</span>
+        <span *ngIf="user.status_message" class="status-text">
+          - {{ user.status_message }}
+        </span>
+        <small class="last-seen">
+          {{ user.last_seen | date: 'HH:mm' }}
+        </small>
+      </div>
+    </div>
+
+    <ng-template #noOnlineUsers>
+      <p class="no-users">Keine Online Benutzer</p>
+    </ng-template>
+  </div>
+</div>

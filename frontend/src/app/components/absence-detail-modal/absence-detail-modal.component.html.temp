@@ -1,0 +1,233 @@
+<ion-modal [isOpen]="isOpen" (didDismiss)="closeModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>Abwesenheit Details</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()" fill="clear">
+            <ion-icon name="close" color="light"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="modal-content">
+      <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
+
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <div class="hero-content">
+          <ion-icon [name]="getAbsenceIcon()" class="hero-icon"></ion-icon>
+          <h1 class="hero-title">{{ absence?.absence_type?.display_name || absence?.reason }}</h1>
+          <ion-badge [color]="getStatusColor(absence?.status || '')" class="hero-badge">
+            {{ getStatusText(absence?.status || '') }}
+          </ion-badge>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Zeitraum Card -->
+        <ion-card class="info-card">
+          <ion-card-content>
+            <div class="card-header">
+              <ion-icon name="calendar" color="primary"></ion-icon>
+              <h3>Zeitraum</h3>
+            </div>
+            <div class="date-range">
+              <span class="start-date">{{ formatDate(absence?.start_date || '') }}</span>
+              <ion-icon name="arrow-forward" color="medium"></ion-icon>
+              <span class="end-date">{{ formatDate(absence?.end_date || '') }}</span>
+            </div>
+            <p class="duration">{{ getDurationText() }}</p>
+          </ion-card-content>
+        </ion-card>
+              </ion-col>
+              
+              <ion-col size="12" size-md="6">
+                <ion-item lines="none">
+                  <ion-icon name="person" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Antragsteller</h3>
+                    <p>{{ absence?.user?.first_name }} {{ absence?.user?.last_name }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row *ngIf="absence?.reason">
+              <ion-col size="12">
+                <ion-item lines="none">
+                  <ion-label>
+                    <h3>Begründung</h3>
+                    <p>{{ absence?.reason }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row *ngIf="absence?.representative">
+              <ion-col size="12">
+                <ion-item lines="none">
+                  <ion-icon name="people" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Vertretung</h3>
+                    <p>{{ absence?.representative?.first_name }} {{ absence?.representative?.last_name }}</p>
+                  </ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row *ngIf="absence?.workday_duration">
+              <ion-col size="12">
+                <ion-item lines="none">
+                  <ion-icon name="time" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Arbeitstage</h3>
+                    <p>{{ absence?.workday_duration }} Arbeitstage</p>
+                  </ion-label>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Kommentare Sektion -->
+      <ion-card class="comments-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-grid>
+              <ion-row class="ion-align-items-center">
+                <ion-col>
+                  <h3>
+                    <ion-icon name="chatbubbles"></ion-icon>
+                    Kommunikation
+                  </h3>
+                </ion-col>
+                <ion-col size="auto">
+                  <ion-button 
+                    fill="clear" 
+                    (click)="toggleCommentForm()"
+                    [color]="showCommentForm() ? 'primary' : 'medium'">
+                    <ion-icon name="add"></ion-icon>
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Kommentar Formular -->
+          <div *ngIf="showCommentForm()" class="comment-form">
+            <form [formGroup]="commentForm" (ngSubmit)="submitComment()">
+              <ion-item>
+                <ion-select 
+                  formControlName="comment_type" 
+                  label="Kommentar Typ"
+                  placeholder="Typ auswählen">
+                  <ion-select-option value="user_comment">Mitarbeiter Kommentar</ion-select-option>
+                  <ion-select-option value="supervisor_feedback">Vorgesetzten Feedback</ion-select-option>
+                  <ion-select-option value="hr_note">HR Notiz</ion-select-option>
+                  <ion-select-option value="revision_request">Änderungsanfrage</ion-select-option>
+                </ion-select>
+              </ion-item>
+
+              <ion-item>
+                <ion-textarea
+                  formControlName="content"
+                  label="Kommentar"
+                  labelPlacement="stacked"
+                  placeholder="Ihr Kommentar..."
+                  rows="4"
+                  [counter]="true"
+                  maxlength="500">
+                </ion-textarea>
+              </ion-item>
+
+              <ion-item>
+                <ion-checkbox formControlName="is_internal"></ion-checkbox>
+                <ion-label class="ion-margin-start">
+                  <h3>Interner Kommentar</h3>
+                  <p>Nur für HR und Vorgesetzte sichtbar</p>
+                </ion-label>
+              </ion-item>
+
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-button 
+                      type="submit" 
+                      expand="block" 
+                      [disabled]="commentForm.invalid || isSubmitting()">
+                      <ion-icon name="send" slot="start"></ion-icon>
+                      Kommentar hinzufügen
+                      <ion-spinner *ngIf="isSubmitting()" name="crescent" slot="end"></ion-spinner>
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="auto">
+                    <ion-button 
+                      fill="clear" 
+                      color="medium" 
+                      (click)="toggleCommentForm()">
+                      Abbrechen
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </form>
+            <ion-item-divider></ion-item-divider>
+          </div>
+
+          <!-- Kommentare Liste -->
+          <div class="comments-list">
+            <div *ngIf="isLoading()" class="loading-container">
+              <ion-spinner name="crescent"></ion-spinner>
+              <ion-text>Kommentare werden geladen...</ion-text>
+            </div>
+
+            <div *ngIf="!isLoading() && comments().length === 0" class="no-comments">
+              <ion-text color="medium">
+                <p>Noch keine Kommentare vorhanden.</p>
+              </ion-text>
+            </div>
+
+            <div *ngFor="let comment of comments(); trackBy: trackByCommentId" class="comment-item">
+              <ion-item>
+                <ion-avatar slot="start">
+                  <ion-icon name="person"></ion-icon>
+                </ion-avatar>
+                
+                <ion-label>
+                  <h3>
+                    {{ comment.author_name }}
+                    <ion-chip 
+                      [color]="getCommentTypeColor(comment.comment_type)" 
+                      size="small" 
+                      class="comment-type-chip">
+                      {{ getCommentTypeLabel(comment.comment_type) }}
+                    </ion-chip>
+                    <ion-icon 
+                      *ngIf="comment.is_internal" 
+                      name="eye-off" 
+                      size="small" 
+                      color="warning"
+                      title="Interner Kommentar">
+                    </ion-icon>
+                  </h3>
+                  
+                  <p class="comment-content">{{ comment.content }}</p>
+                  
+                  <ion-note>{{ formatDateTime(comment.created_at) }}</ion-note>
+                </ion-label>
+              </ion-item>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </ion-content>
+  </ng-template>
+</ion-modal>

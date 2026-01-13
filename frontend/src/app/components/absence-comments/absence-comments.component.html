@@ -1,0 +1,158 @@
+<div class="absence-comments">
+  <!-- Comments Header -->
+  <div class="comments-header">
+    <h3>
+      <ion-icon name="chatbubbles"></ion-icon>
+      Kommunikation
+    </h3>
+    <ion-badge color="primary">{{ comments().length }}</ion-badge>
+  </div>
+
+  <!-- Comments List -->
+  <div class="comments-list" *ngIf="comments().length > 0">
+    <div *ngFor="let comment of comments(); trackBy: trackByCommentId" 
+         class="comment-item" 
+         [class.own-comment]="isOwnComment(comment)"
+         [class.internal-comment]="comment.is_internal">
+      
+      <!-- Comment Header -->
+      <div class="comment-header">
+        <div class="comment-author">
+          <ion-avatar class="author-avatar">
+            <ion-icon [name]="getAuthorIcon(comment.comment_type)"></ion-icon>
+          </ion-avatar>
+          <div class="author-info">
+            <div class="author-name">{{ comment.author_name }}</div>
+            <div class="comment-meta">
+              <ion-chip 
+                [color]="getCommentTypeColor(comment.comment_type)" 
+                size="small">
+                {{ getCommentTypeLabel(comment.comment_type) }}
+              </ion-chip>
+              <span class="comment-time">{{ comment.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Internal Badge -->
+        <ion-badge 
+          *ngIf="comment.is_internal" 
+          color="warning" 
+          class="internal-badge">
+          <ion-icon name="eye-off"></ion-icon>
+          Intern
+        </ion-badge>
+      </div>
+
+      <!-- Comment Content -->
+      <div class="comment-content">
+        <p>{{ comment.content }}</p>
+      </div>
+
+      <!-- Comment Actions -->
+      <div class="comment-actions" *ngIf="canReplyToComment(comment)">
+        <ion-button 
+          fill="clear" 
+          size="small" 
+          (click)="replyToComment(comment)">
+          <ion-icon name="chatbox" slot="start"></ion-icon>
+          Antworten
+        </ion-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-comments" *ngIf="comments().length === 0">
+    <ion-icon name="chatbubbles-outline"></ion-icon>
+    <p>Noch keine Kommentare vorhanden</p>
+    <small>Starten Sie die Kommunikation zu dieser Abwesenheit</small>
+  </div>
+
+  <!-- Add Comment Section -->
+  <div class="add-comment-section" *ngIf="canAddComment()">
+    <form [formGroup]="commentForm" (ngSubmit)="submitComment()">
+      
+      <!-- Comment Type Selection (for supervisors/HR) -->
+      <div class="comment-type-selection" *ngIf="showCommentTypeSelection()">
+        <ion-segment 
+          formControlName="comment_type" 
+          value="user_comment">
+          <ion-segment-button value="user_comment">
+            <ion-icon name="person"></ion-icon>
+            <ion-label>Normal</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="supervisor_note" *ngIf="canCreateSupervisorNote()">
+            <ion-icon name="star"></ion-icon>
+            <ion-label>Vorgesetzter</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="hr_note" *ngIf="canCreateHRNote()">
+            <ion-icon name="business"></ion-icon>
+            <ion-label>HR</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <!-- Internal Comment Toggle -->
+      <div class="internal-toggle" *ngIf="canCreateInternalComment()">
+        <ion-item lines="none">
+          <ion-checkbox 
+            formControlName="is_internal" 
+            slot="start">
+          </ion-checkbox>
+          <ion-label>
+            <div>Interner Kommentar</div>
+            <div class="internal-description">Nur für Vorgesetzte und HR sichtbar</div>
+          </ion-label>
+        </ion-item>
+      </div>
+
+      <!-- Comment Input -->
+      <div class="comment-input">
+        <ion-textarea
+          formControlName="content"
+          placeholder="Ihr Kommentar..."
+          rows="3"
+          maxlength="1000"
+          autoGrow="true"
+          [class.error]="commentForm.get('content')?.invalid && commentForm.get('content')?.touched">
+        </ion-textarea>
+        
+        <!-- Character Counter -->
+        <div class="character-counter">
+          {{ commentForm.get('content')?.value?.length || 0 }}/1000
+        </div>
+
+        <!-- Validation Error -->
+        <div class="error-message" 
+             *ngIf="commentForm.get('content')?.invalid && commentForm.get('content')?.touched">
+          Kommentar ist erforderlich (min. 5 Zeichen)
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="comment-submit">
+        <ion-button 
+          type="submit" 
+          expand="block"
+          [disabled]="commentForm.invalid || isSubmitting()"
+          color="primary">
+          <ion-icon name="send" slot="start"></ion-icon>
+          <span *ngIf="!isSubmitting()">Kommentar senden</span>
+          <span *ngIf="isSubmitting()">Wird gesendet...</span>
+        </ion-button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Permission Info -->
+  <div class="permission-info" *ngIf="!canAddComment()">
+    <ion-card color="light">
+      <ion-card-content>
+        <ion-icon name="information-circle"></ion-icon>
+        <p>Sie können zu dieser Abwesenheit keine Kommentare hinzufügen.</p>
+        <small>Nur der Antragsteller, Vorgesetzte und HR können kommentieren.</small>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</div>

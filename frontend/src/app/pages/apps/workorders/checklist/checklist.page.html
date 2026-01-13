@@ -1,0 +1,142 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Hakliste - Stammdaten verwalten</ion-title>
+    <ion-buttons slot="end">
+      @if (isAdminUser()) {
+        <ion-button (click)="openImportModal()">
+          <ion-icon name="cloud-upload" slot="icon-only"></ion-icon>
+        </ion-button>
+      }
+      @if (canManageChecklist()) {
+        <ion-button (click)="addItem()">
+          <ion-icon name="add" slot="icon-only"></ion-icon>
+        </ion-button>
+      }
+      <ion-button (click)="refresh()">
+        <ion-icon name="refresh" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  
+  <!-- Filter & Search -->
+  <ion-toolbar>
+    <ion-searchbar 
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
+      placeholder="O-Nr, P-Nr, Beschreibung..."
+      debounce="300">
+    </ion-searchbar>
+  </ion-toolbar>
+  
+  <ion-toolbar>
+    <ion-segment [ngModel]="filterMode()" (ngModelChange)="onFilterModeChange($event)">
+      <ion-segment-button value="active">
+        <ion-label>Aktive</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="sr">
+        <ion-label>SR-Rechnungen</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="inactive">
+        <ion-label>Inaktive</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+  
+  <!-- Toggle für "Alle anzeigen" - nur wenn Berechtigung vorhanden -->
+  @if (canViewAllItems()) {
+    <ion-toolbar>
+      <ion-chip 
+        [color]="showAll() ? 'primary' : 'medium'"
+        (click)="toggleShowAll()"
+        style="margin: 8px; cursor: pointer;">
+        <ion-icon [name]="showAll() ? 'eye' : 'eye-off'" slot="start"></ion-icon>
+        <ion-label>{{ showAll() ? 'Alle Einträge anzeigen' : 'Nur meine Einträge' }}</ion-label>
+      </ion-chip>
+    </ion-toolbar>
+  }
+</ion-header>
+
+<ion-content>
+  @if (!isInitialized()) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Initialisiere...</p>
+    </div>
+  } @else if (workorderService.isLoading()) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Hakliste...</p>
+    </div>
+  } @else {
+    @if (filteredItems.length === 0) {
+      <div class="empty-state">
+        <ion-icon name="checkbox-outline" size="large"></ion-icon>
+        <h3>Keine Einträge gefunden</h3>
+        <p>{{ emptyStateMessage }}</p>
+        <ion-button (click)="addItem()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Ersten Eintrag anlegen
+        </ion-button>
+      </div>
+    } @else {
+      <ion-list>
+        @for (item of filteredItems; track item.id) {
+          <ion-item-sliding>
+            <ion-item>
+              <ion-label>
+                <h2>
+                  <strong>{{ item.object_number }}</strong> - {{ item.project_number }}
+                  @if (item.sr_invoice_number) {
+                    <ion-chip color="primary" style="margin-left: 8px; height: 20px;">
+                      <ion-label style="font-size: 11px;">{{ item.sr_invoice_number }}</ion-label>
+                    </ion-chip>
+                  }
+                </h2>
+                <h3>{{ item.object_description }}</h3>
+                @if (item.debitor_number) {
+                  <p>Debitor: {{ item.debitor_number }}</p>
+                }
+                @if (item.notes) {
+                  <p class="notes">{{ item.notes }}</p>
+                }
+                @if (item.valid_from || item.valid_until) {
+                  <p class="validity">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    Gültig:
+                    @if (item.valid_from) {
+                      ab {{ formatDate(item.valid_from) }}
+                    } @else {
+                      ab sofort
+                    }
+                    @if (item.valid_until) {
+                      bis {{ formatDate(item.valid_until) }}
+                    }
+                  </p>
+                }
+              </ion-label>
+              
+              @if (canManageChecklist()) {
+                <ion-button slot="end" fill="clear" (click)="editItem(item)">
+                  <ion-icon name="create" slot="icon-only"></ion-icon>
+                </ion-button>
+              }
+            </ion-item>
+
+            @if (canManageChecklist()) {
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="deleteItem(item)">
+                  <ion-icon name="trash" slot="icon-only"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            }
+          </ion-item-sliding>
+        }
+      </ion-list>
+    }
+  }
+</ion-content>

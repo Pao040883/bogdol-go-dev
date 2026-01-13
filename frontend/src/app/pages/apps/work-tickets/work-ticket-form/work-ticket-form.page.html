@@ -1,0 +1,112 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/apps/work-tickets"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle }}</ion-title>
+    <ion-buttons slot="end">
+      @if (isEditMode) {
+        <ion-button (click)="onDelete()" color="danger">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade...</p>
+    </div>
+  } @else {
+    <form [formGroup]="workOrderForm" (ngSubmit)="onSubmit()">
+      <ion-list>
+        @if (!isEditMode && templates.length > 0) {
+          <ion-item button (click)="loadFromTemplate()">
+            <ion-icon slot="start" name="document-text" color="primary"></ion-icon>
+            <ion-label color="primary">
+              <h2>Aus Vorlage laden</h2>
+              <p>Felder mit Vorlagen-Daten vorausfüllen</p>
+            </ion-label>
+          </ion-item>
+        }
+
+        <ion-item-divider>
+          <ion-label>Kunde & Objekt</ion-label>
+        </ion-item-divider>
+
+        <ion-item [class.ion-invalid]="isFieldInvalid('client')">
+          <ion-select label="Kunde *" labelPlacement="stacked" formControlName="client" placeholder="Kunde auswählen" interface="action-sheet">
+            @for (client of clients; track client.id) {
+              <ion-select-option [value]="client.id">{{ client.name }}</ion-select-option>
+            }
+          </ion-select>
+          <ion-button slot="end" fill="clear" (click)="openNewClientModal()">Neu</ion-button>
+        </ion-item>
+
+        <ion-item>
+          <ion-select label="Arbeitsobjekt" labelPlacement="stacked" formControlName="work_object" placeholder="Optional" interface="action-sheet" [disabled]="!workOrderForm.get('client')?.value">
+            @for (obj of filteredWorkObjects; track obj.id) {
+              <ion-select-option [value]="obj.id">{{ obj.name }}</ion-select-option>
+            }
+          </ion-select>
+          <ion-button slot="end" fill="clear" (click)="openNewObjectModal()" [disabled]="!workOrderForm.get('client')?.value">Neu</ion-button>
+        </ion-item>
+
+        <ion-item-divider><ion-label>Arbeitsdetails</ion-label></ion-item-divider>
+        <ion-item><ion-input label="Projektnummer" labelPlacement="stacked" formControlName="project_number" placeholder="Optional"></ion-input></ion-item>
+        <ion-item [class.ion-invalid]="isFieldInvalid('work_type')"><ion-input label="Arbeitsart *" labelPlacement="stacked" formControlName="work_type" placeholder="z.B. Unterhaltsreinigung"></ion-input></ion-item>
+        <ion-item><ion-textarea label="Arbeitsbeschreibung" labelPlacement="stacked" formControlName="work_description" placeholder="Details" rows="3"></ion-textarea></ion-item>
+
+        <ion-item-divider><ion-label>Zeitraum</ion-label></ion-item-divider>
+        <ion-item [class.ion-invalid]="isFieldInvalid('start_date')">
+          <ion-label position="stacked">Startdatum *</ion-label>
+          <ion-datetime-button datetime="start-datetime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="start-datetime" formControlName="start_date" presentation="date" [preferWheel]="true"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-item [class.ion-invalid]="isFieldInvalid('end_date')">
+          <ion-label position="stacked">Enddatum *</ion-label>
+          <ion-datetime-button datetime="end-datetime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="end-datetime" formControlName="end_date" presentation="date" [preferWheel]="true"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-item [class.ion-invalid]="isFieldInvalid('work_days')"><ion-input label="Arbeitstage *" labelPlacement="stacked" formControlName="work_days" type="number" min="1"></ion-input></ion-item>
+        <ion-item><ion-input label="Arbeitszeit" labelPlacement="stacked" formControlName="work_schedule" placeholder="z.B. 5 x wö. Mo-Fr"></ion-input></ion-item>
+
+        <ion-item-divider><ion-label>Notizen</ion-label></ion-item-divider>
+        <ion-item><ion-textarea label="Kundennotizen" labelPlacement="stacked" formControlName="customer_notes" rows="3"></ion-textarea></ion-item>
+        <ion-item><ion-textarea label="Interne Notizen" labelPlacement="stacked" formControlName="internal_notes" rows="3"></ion-textarea></ion-item>
+
+        @if (isEditMode) {
+          <ion-item-divider><ion-label>Status</ion-label></ion-item-divider>
+          <ion-item>
+            <ion-select label="Status" labelPlacement="stacked" formControlName="status" interface="action-sheet">
+              <ion-select-option value="draft">Entwurf</ion-select-option>
+              <ion-select-option value="in_progress">In Bearbeitung</ion-select-option>
+              <ion-select-option value="completed">Abgeschlossen</ion-select-option>
+              <ion-select-option value="signed">Unterschrieben</ion-select-option>
+              <ion-select-option value="invoiced">Abgerechnet</ion-select-option>
+              <ion-select-option value="cancelled">Storniert</ion-select-option>
+            </ion-select>
+          </ion-item>
+        }
+
+        <ion-note class="form-note">* Pflichtfelder</ion-note>
+      </ion-list>
+
+      <div class="button-container">
+        <ion-button expand="block" type="submit" [disabled]="isLoading"><ion-icon slot="start" name="save"></ion-icon>Speichern</ion-button>
+        <ion-button expand="block" fill="outline" (click)="onCancel()" [disabled]="isLoading"><ion-icon slot="start" name="close"></ion-icon>Abbrechen</ion-button>
+      </div>
+    </form>
+  }
+</ion-content>

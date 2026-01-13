@@ -1,0 +1,107 @@
+<ion-header> 
+  <ion-toolbar color="primary">
+    <ion-title>
+      @if (absenceType) {
+        Abwesenheitsart bearbeiten
+      } @else {
+        Neue Abwesenheitsart
+      }
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item lines="none">
+      <ion-label position="stacked">Technischer Name (z.B. vacation)</ion-label>
+      <ion-input 
+        [value]="formName()" 
+        (ionInput)="formName.set($any($event.target).value)"
+        placeholder="vacation"
+        [disabled]="!!absenceType">
+      </ion-input>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label position="stacked">Anzeigename</ion-label>
+      <ion-input 
+        [value]="formDisplayName()" 
+        (ionInput)="formDisplayName.set($any($event.target).value)"
+        placeholder="Urlaub">
+      </ion-input>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label position="stacked">Beschreibung</ion-label>
+      <ion-input 
+        [value]="formDescription()" 
+        (ionInput)="formDescription.set($any($event.target).value)"
+        placeholder="Bezahlter Jahresurlaub">
+      </ion-input>
+    </ion-item>
+
+    <ion-item button (click)="openIconPicker()" lines="none">
+      <ion-label position="stacked">Icon auswählen</ion-label>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
+        <div style="width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"
+             [style.background-color]="formColor()">
+          <ion-icon [name]="formIcon()" style="font-size: 24px; color: white;"></ion-icon>
+        </div>
+        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ getSelectedIconLabel() }}</span>
+        <ion-icon name="chevron-forward-outline" style="color: var(--ion-color-medium); flex-shrink: 0;"></ion-icon>
+      </div>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label position="stacked">Farbe</ion-label>
+      <div class="color-picker-wrapper">
+        <input 
+          type="color" 
+          [value]="formColor()" 
+          (input)="formColor.set($any($event.target).value)"
+          class="color-picker">
+        <span class="color-value">{{ formColor() }}</span>
+      </div>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label>Genehmigungspflichtig</ion-label>
+      <ion-select 
+        [value]="formRequiresApproval()" 
+        (ionChange)="formRequiresApproval.set($event.detail.value)">
+        <ion-select-option [value]="true">Ja</ion-select-option>
+        <ion-select-option [value]="false">Nein</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none">
+      <ion-label>Von Urlaubskonto abziehen</ion-label>
+      <ion-select 
+        [value]="formDeductFromVacation()" 
+        (ionChange)="formDeductFromVacation.set($event.detail.value)">
+        <ion-select-option [value]="true">Ja</ion-select-option>
+        <ion-select-option [value]="false">Nein</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="cancel()" color="danger">
+        Abbrechen
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" color="success">
+        Speichern
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

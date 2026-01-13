@@ -1,0 +1,200 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Abwesenheitsantrag</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Abwesenheitsdetails...</p>
+    </div>
+  } @else if (absence()) {
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person"></ion-icon>
+          {{ (absence()?.user_data || absence()?.user)?.full_name || 'Unbekannt' }}
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <!-- Status Badge -->
+        <ion-chip [color]="getStatusColor(absence()!.status)">
+          <ion-label>{{ getStatusLabel(absence()!.status) }}</ion-label>
+        </ion-chip>
+        
+        <!-- Abwesenheitstyp -->
+        <ion-item lines="none">
+          <ion-icon name="calendar" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Typ</h3>
+            <p>{{ (absence()?.absence_type_data || absence()?.absence_type)?.display_name || metadata?.absence_type || 'N/A' }}</p>
+          </ion-label>
+        </ion-item>
+        
+        <!-- Zeitraum -->
+        <ion-item lines="none">
+          <ion-icon name="time" slot="start"></ion-icon>
+          <ion-label>
+            <h3>Zeitraum</h3>
+            <p>
+              {{ formatDate(absence()!.start_date) }} - {{ formatDate(absence()!.end_date) }}
+              <strong>({{ absence()?.duration_days || metadata?.duration_days || 0 }} Tag{{ (absence()?.duration_days || 0) !== 1 ? 'e' : '' }})</strong>
+            </p>
+          </ion-label>
+        </ion-item>
+        
+        <!-- Grund -->
+        @if (absence()!.reason || metadata?.reason) {
+          <ion-item lines="none">
+            <ion-icon name="document-text" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Begründung</h3>
+              <p>{{ absence()!.reason || metadata?.reason }}</p>
+            </ion-label>
+          </ion-item>
+        }
+        
+        <!-- Vertretung -->
+        @if (absence()?.representative || absence()?.representative_data) {
+          <ion-item lines="none">
+            <ion-icon name="person" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>Vertretung</h3>
+              <p>{{ (absence()?.representative_data || absence()?.representative)?.full_name || 'Nicht angegeben' }}</p>
+              @if (absence()?.representative_confirmed) {
+                <ion-chip color="success" style="margin: 0.25rem 0 0 0;">
+                  <ion-icon name="checkmark-circle"></ion-icon>
+                  <ion-label>Bestätigt</ion-label>
+                </ion-chip>
+              } @else {
+                <ion-chip color="warning" style="margin: 0.25rem 0 0 0;">
+                  <ion-icon name="time"></ion-icon>
+                  <ion-label>Ausstehende Bestätigung</ion-label>
+                </ion-chip>
+              }
+            </ion-label>
+          </ion-item>
+        }
+        
+        <!-- Change History -->
+        @if (absence()?.change_history && absence()!.change_history!.length > 0) {
+          <ion-item lines="none">
+            <ion-icon name="information-circle" slot="start" color="warning"></ion-icon>
+            <ion-label>
+              <h3>Änderungsverlauf</h3>
+              <div class="change-history">
+                @for (change of absence()!.change_history!; track change.timestamp) {
+                  <div class="change-entry">
+                    <small>
+                      <strong>{{ change.user }}</strong> - {{ formatDate(change.timestamp) }}
+                    </small>
+                    @if (change.reason) {
+                      <p><em>{{ change.reason }}</em></p>
+                    }
+                    <ul>
+                      @for (field of getChangeFields(change.changes); track field) {
+                        <li>
+                          <strong>{{ field }}:</strong> 
+                          <span class="old-value">{{ change.changes[field].old }}</span> 
+                          → 
+                          <span class="new-value">{{ change.changes[field].new }}</span>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+            </ion-label>
+          </ion-item>
+        }
+      </ion-card-content>
+    </ion-card>
+    <!-- Kommentar (optional) -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Kommentar (optional)</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-textarea
+          [(ngModel)]="comment"
+          placeholder="Optionaler Kommentar zur Genehmigung/Ablehnung..."
+          [autoGrow]="true"
+          [rows]="3"
+        ></ion-textarea>
+      </ion-card-content>
+    </ion-card>
+    
+    <!-- Ablehnungsgrund (nur bei Ablehnung sichtbar) -->
+    @if (showRejectionReason()) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Ablehnungsgrund *</ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-textarea
+            [(ngModel)]="rejectionReason"
+            placeholder="Bitte geben Sie einen Grund für die Ablehnung ein..."
+            [autoGrow]="true"
+            [rows]="3"
+            [required]="true"
+          ></ion-textarea>
+        </ion-card-content>
+      </ion-card>
+    }
+    
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      @if (!isSubmitting()) {
+        @if (absence()!.status === 'pending' || absence()!.status === 'revision_requested') {
+          <ion-button expand="block" color="success" (click)="approve()">
+            <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+            Genehmigen
+          </ion-button>
+          
+          @if (!showRejectionReason()) {
+            <ion-button 
+              expand="block" 
+              color="danger" 
+              (click)="showRejectForm()"
+            >
+              <ion-icon name="close-circle" slot="start"></ion-icon>
+              Ablehnen
+            </ion-button>
+          } @else {
+            <ion-button 
+              expand="block" 
+              color="danger" 
+              (click)="reject()"
+            >
+              <ion-icon name="close-circle" slot="start"></ion-icon>
+              Ablehnung bestätigen
+            </ion-button>
+          }
+        } @else {
+          <p class="info-text">
+            Diese Abwesenheit kann im aktuellen Status ({{ getStatusLabel(absence()!.status) }}) nicht genehmigt oder abgelehnt werden.
+          </p>
+        }
+      } @else {
+        <div class="submitting-container">
+          <ion-spinner></ion-spinner>
+          <p>Wird verarbeitet...</p>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="error-container">
+      <ion-icon name="warning" color="danger"></ion-icon>
+      <p>Fehler beim Laden der Abwesenheitsdetails.</p>
+      <ion-button (click)="close()">Schließen</ion-button>
+    </div>
+  }
+</ion-content>

@@ -1,0 +1,29 @@
+ion-tab {
+  overflow-y: scroll;
+}
+
+.date-button {
+  width: 100%;
+}
+
+.date-button::part(native) {
+  width: 100%;
+  text-align: left;
+  background-color: transparent;
+  padding-inline: 0;
+}
+
+ion-note {
+  padding-left: 16px;
+}
+.swipe-hint {
+  color: var(--ion-color-medium);
+  font-size: 18px;
+  margin-left: 8px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+ion-item-sliding:hover .swipe-hint {
+  opacity: 0.8;
+}

@@ -1,0 +1,77 @@
+<ion-grid fixed="true">
+  <ion-row>
+    @for (tile of tiles; track tile.id) {
+      <ion-col 
+        [size]="colSizeXs" 
+        [sizeSm]="colSizeSm"
+        [sizeMd]="colSizeMd" 
+        [sizeLg]="colSizeLg" 
+        [sizeXl]="colSizeXl">
+        
+        @if (tile.externalUrl) {
+          <a [href]="tile.externalUrl" target="_blank" rel="noopener noreferrer" class="tile-link">
+            <ion-item 
+              [color]="tile.color || 'primary'" 
+              class="tile-item" 
+              lines="none" 
+              button
+              [disabled]="tile.disabled"
+              [class.disabled]="tile.disabled">
+              
+              <ion-icon slot="start" [name]="tile.icon"></ion-icon>
+              
+              <ion-label>
+                @if (tile.subtitle) {
+                  <p>{{ tile.subtitle }}</p>
+                }
+                <h1>{{ tile.title }}</h1>
+              </ion-label>
+              
+              @if (tile.badge && tile.badge !== 0) {
+                <ion-badge color="danger" class="tile-badge" slot="end">
+                  {{ tile.badge }}
+                </ion-badge>
+              }
+              @if (tile.badge$ && ((tile.badge$ | async) ?? 0) > 0) {
+                <ion-badge color="danger" class="tile-badge" slot="end">
+                  {{ tile.badge$ | async }}
+                </ion-badge>
+              }
+            </ion-item>
+          </a>
+        } @else {
+          <ion-item 
+            [color]="tile.color || 'primary'" 
+            class="tile-item" 
+            lines="none" 
+            button
+            [routerLink]="tile.route || null"
+            [disabled]="tile.disabled"
+            (click)="onTileClick(tile, $event)"
+            [class.disabled]="tile.disabled">
+            
+            <ion-icon slot="start" [name]="tile.icon"></ion-icon>
+            
+            <ion-label>
+              @if (tile.subtitle) {
+                <p>{{ tile.subtitle }}</p>
+              }
+              <h1>{{ tile.title }}</h1>
+            </ion-label>
+            
+            @if (tile.badge && tile.badge !== 0) {
+              <ion-badge color="danger"  class="tile-badge" slot="end">
+                {{ tile.badge }}
+              </ion-badge>
+            }
+            @if (tile.badge$ && ((tile.badge$ | async) ?? 0) > 0) {
+              <ion-badge color="danger" class="tile-badge" slot="end">
+                {{ tile.badge$ | async }}
+              </ion-badge>
+            }
+          </ion-item>
+        }
+      </ion-col>
+    }
+  </ion-row>
+</ion-grid>

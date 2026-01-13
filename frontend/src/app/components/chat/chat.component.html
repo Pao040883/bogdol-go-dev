@@ -1,0 +1,225 @@
+<!-- Chat Component Template -->
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/intranet/chat"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <div *ngIf="conversation">
+        {{ getConversationTitle() }}
+        <span *ngIf="isE2EEnabled" class="e2e-badge">
+          <ion-icon name="lock-closed"></ion-icon> E2E
+        </span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-badge [color]="isConnected ? 'success' : 'danger'">
+        {{ isConnected ? '🟢' : '🔴' }}
+      </ion-badge>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" #messageContainer>
+  <div class="messages-container">
+    <div *ngIf="isLoading" class="loading">
+      <ion-spinner></ion-spinner>
+      <p>Nachrichten werden geladen...</p>
+    </div>
+
+    <div *ngFor="let message of messages" 
+         [ngClass]="['message', message.sender_data.username === (currentUser?.username || '') ? 'sent' : 'received']"
+         (press)="onMessageLongPress(message)">
+      
+      <!-- Avatar links (nur bei received) -->
+      <div class="avatar" *ngIf="message.sender_data && message.sender_data.username !== (currentUser?.username || '')">
+        <img *ngIf="message.sender_data.avatar"
+             [src]="message.sender_data.avatar"
+             [alt]="message.sender_data.full_name" />
+        <div *ngIf="!message.sender_data.avatar" class="avatar-initials">
+          {{ getInitials(message.sender_data.full_name) }}
+        </div>
+      </div>
+
+      <!-- Message Bubble -->
+      <div class="message-bubble" [class.deleted]="message.is_deleted">
+        <!-- Header: Sender + Encryption Icon + Time in einer Zeile -->
+        <div class="message-header">
+          <span class="sender-name">{{ message.sender_data.full_name }}</span>
+          <ion-icon 
+            *ngIf="message.is_encrypted" 
+            name="lock-closed" 
+            class="encryption-icon"
+            title="End-to-End verschlüsselt">
+          </ion-icon>
+          <span class="timestamp">{{ message.sent_at | date: 'HH:mm' }}</span>
+        </div>
+
+        <!-- Reply Preview -->
+        <div *ngIf="message.reply_preview" class="reply-preview">
+          <small>{{ message.reply_preview.sender }}:</small>
+          <p>{{ message.reply_preview.content }}</p>
+        </div>
+
+        <!-- Content -->
+        <div class="message-content" *ngIf="!message.is_deleted">
+          <!-- Text (bei text-Nachrichten oder als Begleittext bei file/image) -->
+          <p *ngIf="message.content && message.content.trim()">{{ message.content }}</p>
+          
+          <!-- Datei-Anhang -->
+          <div *ngIf="message.message_type === 'file' && message.file" class="file-message">
+            <ion-icon name="document-outline"></ion-icon>
+            <a [href]="message.file || ''" target="_blank">{{ message.file_name || 'Datei' }}</a>
+            <small *ngIf="message.file_size">({{ ((message.file_size || 0) / 1024).toFixed(1) }} KB)</small>
+          </div>
+          
+          <!-- Bild-Anhang -->
+          <img *ngIf="message.message_type === 'image' && message.file" 
+               [src]="message.file" 
+               alt="Image" 
+               class="image-message" />
+          
+          <!-- Abwesenheitsantrag -->
+          <div *ngIf="message.message_type === 'absence_request' && message.metadata" class="absence-request-card">
+            <div class="absence-header">
+              <ion-icon name="calendar"></ion-icon>
+              <strong>{{ message.metadata['absence_type'] }}</strong>
+            </div>
+            <div class="absence-details">
+              <p>
+                <ion-icon name="time"></ion-icon>
+                {{ formatAbsenceDate(message.metadata['start_date']) }} - {{ formatAbsenceDate(message.metadata['end_date']) }}
+                <strong>({{ message.metadata['duration_days'] }} Tag{{ message.metadata['duration_days'] !== 1 ? 'e' : '' }})</strong>
+              </p>
+              <p *ngIf="message.metadata['reason']">
+                <ion-icon name="document-text"></ion-icon>
+                {{ message.metadata['reason'] }}
+              </p>
+            </div>
+            <ion-button 
+              *ngIf="canApproveAbsence(message)" 
+              expand="block" 
+              color="primary" 
+              size="small"
+              (click)="openAbsenceApprovalModal(message)">
+              <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+              Prüfen & Genehmigen
+            </ion-button>
+            <ion-button 
+              *ngIf="!canApproveAbsence(message) && message.metadata['status'] === 'approved'" 
+              expand="block" 
+              color="success" 
+              size="small"
+              disabled>
+              <ion-icon name="checkmark-done" slot="start"></ion-icon>
+              Genehmigt
+            </ion-button>
+            <ion-button 
+              *ngIf="!canApproveAbsence(message) && message.metadata['status'] === 'rejected'" 
+              expand="block" 
+              color="danger" 
+              size="small"
+              disabled>
+              <ion-icon name="close-circle" slot="start"></ion-icon>
+              Abgelehnt
+            </ion-button>
+          </div>
+          
+          <!-- Abwesenheitsentscheidung -->
+          <div *ngIf="message.message_type === 'absence_decision' && message.metadata" class="absence-decision-card">
+            <div class="decision-header" [class.approved]="message.metadata['decision'] === 'approved'" [class.rejected]="message.metadata['decision'] === 'rejected'">
+              <ion-icon [name]="message.metadata['decision'] === 'approved' ? 'checkmark-circle' : 'close-circle'"></ion-icon>
+              <strong>{{ message.metadata['decision'] === 'approved' ? 'Genehmigt' : 'Abgelehnt' }}</strong>
+            </div>
+            <div class="absence-details">
+              <p>
+                <ion-icon name="calendar"></ion-icon>
+                <strong>{{ message.metadata['absence_type'] }}</strong>
+              </p>
+              <p>
+                <ion-icon name="time"></ion-icon>
+                {{ formatAbsenceDate(message.metadata['start_date']) }} - {{ formatAbsenceDate(message.metadata['end_date']) }}
+                <strong>({{ message.metadata['duration_days'] }} Tag{{ message.metadata['duration_days'] !== 1 ? 'e' : '' }})</strong>
+              </p>
+            </div>
+            <p class="decided-by">von {{ message.metadata['decided_by'] }}</p>
+            <p *ngIf="message.metadata['rejection_reason']" class="rejection-reason">
+              <strong>Begründung:</strong> {{ message.metadata['rejection_reason'] }}
+            </p>
+          </div>
+        </div>
+        <div class="message-content deleted-message" *ngIf="message.is_deleted">
+          <p><em>Diese Nachricht wurde gelöscht</em></p>
+        </div>
+
+        <!-- Footer: Edited Badge + Reactions + Reaction Button -->
+        <div class="message-footer">
+          <span *ngIf="message.is_edited" class="edited-badge">bearbeitet</span>
+          
+          <!-- Existing Reactions -->
+          <div *ngIf="message.reactions && (message.reactions | keyvalue).length > 0" class="reactions">
+            <button 
+              *ngFor="let reaction of message.reactions | keyvalue" 
+              class="reaction" 
+              [class.user-reacted]="hasUserReacted(message, reaction.key)"
+              [disabled]="!hasUserReacted(message, reaction.key)"
+              (click)="hasUserReacted(message, reaction.key) && toggleReaction(message, reaction.key)">
+              {{ reaction.key }} <small>{{ reaction.value.length }}</small>
+            </button>
+          </div>
+
+          <!-- Quick Reaction Buttons (if not deleted) -->
+          <div *ngIf="!message.is_deleted" class="quick-reactions">
+            <button class="quick-reaction-btn" (click)="toggleReaction(message, '👍')" title="Daumen hoch">
+              {{ hasUserReacted(message, '👍') ? '👍' : '👍' }}
+            </button>
+            <button class="quick-reaction-btn" (click)="toggleReaction(message, '❤️')" title="Herz">
+              {{ hasUserReacted(message, '❤️') ? '❤️' : '❤️' }}
+            </button>
+            <button class="quick-reaction-btn" (click)="toggleReaction(message, '😂')" title="Lachen">
+              {{ hasUserReacted(message, '😂') ? '😂' : '😂' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Avatar rechts (nur bei sent) -->
+      <div class="avatar" *ngIf="message.sender_data && message.sender_data.username === (currentUser?.username || '')">
+        <img *ngIf="message.sender_data.avatar"
+             [src]="message.sender_data.avatar"
+             [alt]="message.sender_data.full_name" />
+        <div *ngIf="!message.sender_data.avatar" class="avatar-initials">
+          {{ getInitials(message.sender_data.full_name) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div *ngIf="(typingUsers$ | async) as typingUsers" class="typing-indicator">
+      <p *ngIf="typingUsers.size > 0">{{ getTypingText() }}</p>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="input-area">
+      <app-emoji-picker (emojiSelected)="onEmojiSelected($event)"></app-emoji-picker>
+      <ion-textarea
+        [(ngModel)]="newMessageContent"
+        (keydown.enter)="sendMessage()"
+        (ionInput)="onInputChange()"
+        placeholder="Nachricht eingeben..."
+        [rows]="2"
+        [disabled]="!isConnected"
+        auto-grow="true">
+      </ion-textarea>
+      <ion-button
+        (click)="sendMessage()"
+        [disabled]="!newMessageContent.trim() || !isConnected"
+        color="primary">
+        <ion-icon name="send" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

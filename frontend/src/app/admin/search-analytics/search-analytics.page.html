@@ -1,0 +1,488 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>KI Such-Analytics</ion-title>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="selectedTab" (ionChange)="segmentChanged($event)">
+      <ion-segment-button value="overview">
+        <ion-label>Übersicht</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="clicks">
+        <ion-label>Klicks</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="mappings">
+        <ion-label>Zuordnungen</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="synonyms">
+        <ion-label>Synonyme</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="history">
+        <ion-label>Historie</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Period Selector -->
+  <ion-card *ngIf="selectedTab === 'overview' || selectedTab === 'clicks'">
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Zeitraum</ion-label>
+        <ion-select [(ngModel)]="periodDays" (ionChange)="periodChanged($event)">
+          <ion-select-option [value]="7">Letzte 7 Tage</ion-select-option>
+          <ion-select-option [value]="30">Letzte 30 Tage</ion-select-option>
+          <ion-select-option [value]="90">Letzte 90 Tage</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- OVERVIEW TAB -->
+  <div *ngIf="selectedTab === 'overview' && overview">
+    <!-- Key Metrics -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>📊 Kernzahlen</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <div class="metric">
+                <div class="metric-value">{{ overview.total_searches }}</div>
+                <div class="metric-label">Suchen</div>
+              </div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="metric">
+                <div class="metric-value">{{ overview.total_clicks }}</div>
+                <div class="metric-label">Klicks</div>
+              </div>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <div class="metric">
+                <div class="metric-value">{{ (overview.avg_click_rate * 100).toFixed(1) }}%</div>
+                <div class="metric-label">Click-Rate</div>
+              </div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="metric">
+                <div class="metric-value">{{ overview.avg_results_per_query.toFixed(1) }}</div>
+                <div class="metric-label">Ø Ergebnisse</div>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Top Queries -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>🔥 Top Suchanfragen</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let q of overview.top_queries">
+            <ion-label>
+              <h3>{{ q.query_text }}</h3>
+              <p>{{ q.count }}x gesucht • Ø {{ q.avg_results.toFixed(1) }} Ergebnisse</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="q.avg_score > 0.5 ? 'success' : 'warning'">
+              {{ (q.avg_score * 100).toFixed(0) }}%
+            </ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Trending Queries -->
+    <ion-card *ngIf="overview.trending_queries.length > 0">
+      <ion-card-header>
+        <ion-card-title>📈 Trending</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let q of overview.trending_queries">
+            <ion-label>
+              <h3>{{ q.query }}</h3>
+              <p>{{ q.recent_count }} diese Woche (+{{ q.growth }})</p>
+            </ion-label>
+            <ion-badge slot="end" color="success">+{{ q.growth }}</ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Zero Results -->
+    <ion-card *ngIf="overview.zero_result_queries.length > 0">
+      <ion-card-header>
+        <ion-card-title>⚠️ Keine Ergebnisse</ion-card-title>
+        <ion-card-subtitle>Diese Queries sollten optimiert werden</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let q of overview.zero_result_queries">
+            <ion-label>
+              <h3>{{ q.query_text }}</h3>
+              <p>{{ q.count }}x ohne Ergebnis</p>
+            </ion-label>
+            <ion-button slot="end" size="small" fill="outline" (click)="createSynonymFromQuery(q.query_text)">
+              <ion-icon slot="start" name="add"></ion-icon>
+              Synonym erstellen
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- CLICKS TAB -->
+  <div *ngIf="selectedTab === 'clicks' && clickAnalytics">
+    <!-- Click Metrics -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>🖱️ Click-Metriken</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="metric">
+          <div class="metric-value">{{ clickAnalytics.avg_click_position.toFixed(1) }}</div>
+          <div class="metric-label">Ø Click-Position</div>
+          <p class="metric-hint">Niedrigere Position = besseres Ranking</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Most Clicked Profiles -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>⭐ Meistgeklickte Profile</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let profile of clickAnalytics.most_clicked_profiles; let i = index">
+            <ion-avatar slot="start">
+              <div class="rank-badge">{{ i + 1 }}</div>
+            </ion-avatar>
+            <ion-label>
+              <h3>{{ profile.name }}</h3>
+              <p>{{ profile.click_count }} Klicks • Ø Pos {{ profile.avg_position }}</p>
+              <p>Relevanz: {{ (profile.avg_relevance * 100).toFixed(0) }}% • 
+                 Zeit: {{ profile.avg_time_on_page }}s</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Position Distribution -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>📍 Click-Positionen</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div *ngFor="let pos of getPositionChartData()" class="position-bar">
+          <span class="position-label">Pos {{ pos.position }}</span>
+          <div class="bar-container">
+            <div class="bar" [style.width.%]="(pos.clicks / clickAnalytics.most_clicked_profiles[0]?.click_count * 100)"></div>
+          </div>
+          <span class="position-count">{{ pos.clicks }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- PROFILE MAPPINGS TAB -->
+  <div *ngIf="selectedTab === 'mappings'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          Profil-Zuordnungen
+          <ion-button size="small" (click)="startNewMapping()" style="float: right;">
+            <ion-icon slot="start" name="add"></ion-icon>
+            Neue Zuordnung
+          </ion-button>
+        </ion-card-title>
+        <ion-card-subtitle>Ordne Personen zu Suchbegriffen zu, um bessere Treffer zu erzielen</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Editor -->
+        <div *ngIf="editingMapping" class="mapping-editor">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>{{ editingMapping.id ? 'Zuordnung bearbeiten' : 'Neue Zuordnung' }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item>
+                <ion-label position="stacked">Suchbegriff *</ion-label>
+                <ion-input
+                  [(ngModel)]="editingMapping!.query_term"
+                  placeholder="z.B. drucker problem, rechnung, urlaub"
+                  (keyup.enter)="editingMapping && saveMapping()"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="stacked">Person suchen *</ion-label>
+                <ion-input
+                  [(ngModel)]="searchProfileQuery"
+                  placeholder="Name eingeben..."
+                  (ionInput)="searchProfiles()"
+                ></ion-input>
+              </ion-item>
+
+              <!-- Loading Spinner -->
+              <div *ngIf="isSearchingProfiles" class="search-loading">
+                <ion-spinner name="dots"></ion-spinner>
+                <p>Suche läuft...</p>
+              </div>
+
+              <!-- Suchergebnisse -->
+              <div *ngIf="!isSearchingProfiles && searchProfileResults.length > 0" class="profile-search-results">
+                <ion-list>
+                  <ion-item 
+                    *ngFor="let profile of searchProfileResults"
+                    button
+                    (click)="selectProfile(profile)"
+                  >
+                    <ion-label>
+                      <h3>{{ profile.first_name }} {{ profile.last_name }}</h3>
+                    </ion-label>
+                  </ion-item>
+                </ion-list>
+              </div>
+
+              <!-- Keine Ergebnisse -->
+              <div *ngIf="!isSearchingProfiles && searchProfileQuery.length > 0 && searchProfileResults.length === 0" class="no-results">
+                <p>Keine Personen gefunden für "{{ searchProfileQuery }}"</p>
+              </div>
+
+              <!-- Ausgewähltes Profil -->
+              <div *ngIf="editingMapping.profile_name" class="selected-profile">
+                <ion-chip color="primary">
+                  <ion-label>{{ editingMapping.profile_name }}</ion-label>
+                  <ion-icon name="close-circle" (click)="editingMapping!.profile_id = null; editingMapping!.profile_name = ''"></ion-icon>
+                </ion-chip>
+              </div>
+
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-item>
+                      <ion-label position="stacked">Boost-Wert (0.0 - 1.0)</ion-label>
+                      <ion-input
+                        type="number"
+                        [(ngModel)]="editingMapping!.boost_score"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                      ></ion-input>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col>
+                    <ion-item>
+                      <ion-label position="stacked">Priorität</ion-label>
+                      <ion-input
+                        type="number"
+                        [(ngModel)]="editingMapping!.priority"
+                        min="1"
+                      ></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+
+              <ion-item>
+                <ion-label position="stacked">Notizen</ion-label>
+                <ion-input
+                  [(ngModel)]="editingMapping!.notes"
+                  placeholder="Warum diese Zuordnung?"
+                ></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label>Aktiv</ion-label>
+                <ion-checkbox slot="start" [(ngModel)]="editingMapping!.is_active"></ion-checkbox>
+              </ion-item>
+
+              <div class="button-group">
+                <ion-button (click)="saveMapping()" color="primary">
+                  <ion-icon slot="start" name="save"></ion-icon>
+                  Speichern
+                </ion-button>
+                <ion-button (click)="cancelMapping()" color="medium">
+                  Abbrechen
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+
+        <!-- Liste -->
+        <ion-list *ngIf="!editingMapping">
+          <ion-item *ngFor="let mapping of profileMappings">
+            <ion-label>
+              <h2>
+                <strong>{{ mapping.query_term }}</strong> → {{ mapping.profile_name }}
+                <ion-badge [color]="mapping.is_active ? 'success' : 'medium'">
+                  {{ mapping.is_active ? 'Aktiv' : 'Inaktiv' }}
+                </ion-badge>
+              </h2>
+              <p>
+                Boost: +{{ mapping.boost_score }} | Priorität: {{ mapping.priority }}
+                <span *ngIf="mapping.notes"> | {{ mapping.notes }}</span>
+              </p>
+              <p class="text-muted">
+                Erstellt: {{ mapping.created_at | date:'short' }}
+                <span *ngIf="mapping.created_by"> von {{ mapping.created_by }}</span>
+              </p>
+            </ion-label>
+            <ion-button slot="end" fill="clear" (click)="toggleMapping(mapping)">
+              <ion-icon slot="icon-only" [name]="mapping.is_active ? 'eye-off' : 'eye'"></ion-icon>
+            </ion-button>
+            <ion-button slot="end" fill="clear" (click)="startEditMapping(mapping)">
+              <ion-icon slot="icon-only" name="create"></ion-icon>
+            </ion-button>
+            <ion-button slot="end" fill="clear" color="danger" (click)="deleteMapping(mapping)">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-item *ngIf="profileMappings.length === 0">
+            <ion-label class="ion-text-center">
+              <p>Noch keine Zuordnungen vorhanden</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- SYNONYMS TAB -->
+  <div *ngIf="selectedTab === 'synonyms'">
+    <!-- Add New Synonym -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>➕ Neues Synonym</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Hauptbegriff</ion-label>
+          <ion-input [(ngModel)]="newSynonym.term" placeholder="z.B. drucker"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Synonyme (Enter zum Hinzufügen)</ion-label>
+          <ion-input 
+            (keyup.enter)="addSynonymToList($event, newSynonym)" 
+            placeholder="z.B. printer">
+          </ion-input>
+        </ion-item>
+        <div class="synonym-chips">
+          <ion-chip *ngFor="let syn of newSynonym.synonyms_list; let i = index" 
+                    (click)="removeSynonymFromList(newSynonym, i)">
+            <ion-label>{{ syn }}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        </div>
+        <ion-button expand="block" (click)="saveSynonym(newSynonym)" 
+                    [disabled]="!newSynonym.term || newSynonym.synonyms_list.length === 0">
+          Synonym erstellen
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Existing Synonyms -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>📚 Vorhandene Synonyme</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let synonym of synonyms">
+            <ion-label *ngIf="editingSynonym?.id !== synonym.id">
+              <h3>{{ synonym.term }}</h3>
+              <p>{{ synonym.synonyms_list.join(', ') }}</p>
+              <p>Gewicht: {{ synonym.weight }} • {{ synonym.is_active ? 'Aktiv' : 'Inaktiv' }}</p>
+            </ion-label>
+            
+            <!-- Edit Mode -->
+            <div *ngIf="editingSynonym?.id === synonym.id" style="width: 100%;">
+              <ion-item>
+                <ion-label position="stacked">Begriff</ion-label>
+                <ion-input [(ngModel)]="editingSynonym!.term"></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label position="stacked">Synonyme hinzufügen</ion-label>
+                <ion-input (keyup.enter)="editingSynonym && addSynonymToList($event, editingSynonym)"></ion-input>
+              </ion-item>
+              <div class="synonym-chips">
+                <ion-chip *ngFor="let syn of editingSynonym?.synonyms_list; let i = index" 
+                          (click)="editingSynonym && removeSynonymFromList(editingSynonym, i)">
+                  <ion-label>{{ syn }}</ion-label>
+                  <ion-icon name="close-circle"></ion-icon>
+                </ion-chip>
+              </div>
+              <ion-button size="small" (click)="editingSynonym && saveSynonym(editingSynonym)">Speichern</ion-button>
+              <ion-button size="small" fill="clear" (click)="cancelEdit()">Abbrechen</ion-button>
+            </div>
+            
+            <ion-button slot="end" fill="clear" (click)="editSynonym(synonym)" 
+                        *ngIf="editingSynonym?.id !== synonym.id">
+              <ion-icon name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button slot="end" fill="clear" color="danger" (click)="deleteSynonym(synonym)"
+                        *ngIf="editingSynonym?.id !== synonym.id">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div *ngIf="selectedTab === 'history'">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>📜 Such-Historie (100 neueste)</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let query of queryHistory">
+            <ion-label>
+              <h3>{{ query.query_text }}</h3>
+              <p>{{ query.user }} • {{ query.result_count }} Ergebnisse • 
+                 {{ query.click_count }} Klicks</p>
+              <p *ngIf="query.clicked_profiles && query.clicked_profiles.length > 0" class="clicked-profiles">
+                👤 Angeklickt: 
+                <span *ngFor="let profile of query.clicked_profiles; let i = index">
+                  {{ profile.name }} (Pos {{ profile.position }}){{ i < query.clicked_profiles.length - 1 ? ', ' : '' }}
+                </span>
+              </p>
+              <p class="timestamp">{{ query.created_at | date:'short' }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="query.avg_score > 0.5 ? 'success' : 'warning'">
+              {{ (query.avg_score * 100).toFixed(0) }}%
+            </ion-badge>
+            <ion-button slot="end" fill="clear" color="danger" (click)="deleteQuery(query)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner></ion-spinner>
+  </div>
+</ion-content>

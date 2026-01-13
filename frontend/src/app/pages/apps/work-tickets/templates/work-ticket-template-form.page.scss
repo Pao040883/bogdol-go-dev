@@ -1,0 +1,17 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 20px;
+}
+
+.form-footer {
+  padding: 20px 16px;
+  text-align: center;
+
+  ion-note {
+    font-size: 0.85em;
+  }
+}

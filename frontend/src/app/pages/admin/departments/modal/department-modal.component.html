@@ -1,0 +1,135 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      {{ department ? 'Abteilung bearbeiten' : 'Neue Abteilung' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (isLoading) {
+    <div class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Lade Daten...</p>
+    </div>
+  } @else {
+    <ion-list>
+      <ion-item>
+        <ion-input
+          label="Name *"
+          labelPlacement="stacked"
+          [(ngModel)]="formData.name"
+          placeholder="z.B. Entwicklung"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Code *"
+          labelPlacement="stacked"
+          [(ngModel)]="formData.code"
+          placeholder="z.B. DEV"
+          required
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-textarea
+          label="Beschreibung"
+          labelPlacement="stacked"
+          [(ngModel)]="formData.description"
+          placeholder="Optionale Beschreibung"
+          rows="3"
+        ></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-textarea
+          label="Such-Keywords (für KI-Suche)"
+          labelPlacement="stacked"
+          [(ngModel)]="formData.search_keywords"
+          placeholder="z.B. Computer, Handy, Hardware, IT-Support, Technik"
+          rows="3"
+        ></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-select
+          label="Gesellschaft *"
+          labelPlacement="stacked"
+          [(ngModel)]="formData.company"
+          placeholder="Gesellschaft auswählen"
+        >
+          @for (company of companies; track company.id) {
+            <ion-select-option [value]="company.id">
+              {{ company.name }}
+            </ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select
+          label="Übergeordnete Abteilung"
+          labelPlacement="stacked"
+          [(ngModel)]="formData.parent"
+          placeholder="Keine (Hauptabteilung)"
+        >
+          <ion-select-option [value]="null">Keine (Hauptabteilung)</ion-select-option>
+          @for (dept of availableParentDepartments; track dept.id) {
+            <ion-select-option [value]="dept.id">
+              {{ dept.name }} ({{ dept.code }})
+            </ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-select
+          label="Organisationstyp *"
+          labelPlacement="stacked"
+          [(ngModel)]="formData.org_type"
+          placeholder="Typ auswählen"
+        >
+          <ion-select-option value="administration">Verwaltungsbereich</ion-select-option>
+          <ion-select-option value="operations">Betrieb</ion-select-option>
+          <ion-select-option value="other">Sonstiges</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-toggle [(ngModel)]="formData.is_staff_department">
+          Stabsstelle
+        </ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-toggle [(ngModel)]="formData.is_active">
+          Aktiv
+        </ion-toggle>
+      </ion-item>
+    </ion-list>
+  }
+</ion-content>
+
+<ion-toolbar>
+  <ion-buttons slot="end">
+    <ion-button color="medium" (click)="cancel()">
+      Abbrechen
+    </ion-button>
+    <ion-button color="primary" (click)="save()" [disabled]="isSaving">
+      @if (isSaving) {
+        <ion-spinner></ion-spinner>
+      } @else {
+        <ion-icon name="save-outline"></ion-icon>
+        Speichern
+      }
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>

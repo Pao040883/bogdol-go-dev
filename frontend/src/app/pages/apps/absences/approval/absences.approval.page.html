@@ -1,0 +1,100 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Abwesenheiten genehmigen</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip color="warning">
+        <ion-icon name="time"></ion-icon>
+        <ion-label>{{ approvals().length }} offen</ion-label>
+      </ion-chip>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Debug Info -->
+  <ion-card>
+    <ion-card-content>
+      <p><strong>Debug Info:</strong></p>
+      <p>Absences geladen: {{ absenceService.absences().length }}</p>
+      <p>Pending Approvals: {{ approvals().length }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Team Calendar -->
+  <div class="calendar-container">
+    <h2 style="padding: 0 16px;">Team-Kalender</h2>
+    <app-team-absence-calendar
+      [showFilters]="false">
+    </app-team-absence-calendar>
+  </div>
+
+  <!-- Pending Approvals List -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="checkmark-circle" color="warning"></ion-icon>
+        Ausstehende Genehmigungen
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      @if (approvals().length === 0) {
+        <div class="empty-state">
+          <ion-icon name="checkmark-circle" size="large" color="success"></ion-icon>
+          <p>Keine offenen Genehmigungen</p>
+        </div>
+      } @else {
+        <ion-list>
+          @for (absence of approvals(); track absence.id) {
+            <ion-item lines="full">
+              <ion-icon slot="start" name="person" color="primary"></ion-icon>
+              
+              <ion-label>
+                <h2>
+                  <strong>{{ absence.user.first_name }} {{ absence.user.last_name }}</strong>
+                </h2>
+                <p>
+                  <ion-icon name="calendar" size="small"></ion-icon>
+                  {{ absence.start_date | date:'dd.MM.yyyy' }} - {{ absence.end_date | date:'dd.MM.yyyy' }}
+                </p>
+                <p>
+                  <ion-icon name="time" size="small"></ion-icon>
+                  {{ getAbsenceDuration(absence) }} Tag(e)
+                  @if (absence.reason) {
+                    · {{ absence.reason }}
+                  }
+                </p>
+                @if (absence.reason) {
+                  <p class="notes">
+                    <em>{{ absence.reason }}</em>
+                  </p>
+                }
+              </ion-label>
+
+              <div slot="end" class="action-buttons">
+                <ion-button 
+                  color="success" 
+                  fill="solid"
+                  size="small"
+                  (click)="approve(absence.id!)">
+                  <ion-icon slot="start" name="checkmark-circle"></ion-icon>
+                  Genehmigen
+                </ion-button>
+                <ion-button 
+                  color="danger" 
+                  fill="outline"
+                  size="small"
+                  (click)="openRejectModal(absence.id!)">
+                  <ion-icon slot="start" name="close-circle"></ion-icon>
+                  Ablehnen
+                </ion-button>
+              </div>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    </ion-card-content>
+  </ion-card>
+</ion-content>

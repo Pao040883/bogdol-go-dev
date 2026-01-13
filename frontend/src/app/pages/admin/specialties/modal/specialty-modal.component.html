@@ -1,0 +1,141 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      {{ mode === 'create' ? 'Fachbereich erstellen' : 'Fachbereich bearbeiten' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="isSaving()">
+        <strong>Speichern</strong>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form>
+    <ion-list>
+      <!-- Department Selection -->
+      <ion-item>
+        <ion-label position="stacked">Abteilung <ion-text color="danger">*</ion-text></ion-label>
+        <ion-select
+          [value]="formData().department"
+          (ionChange)="updateFormField('department', $event.detail.value); onDepartmentChange($event.detail.value)"
+          placeholder="Abteilung wählen"
+          interface="popover">
+          <ion-select-option *ngFor="let dept of departments()" [value]="dept.id">
+            {{ dept.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Name -->
+      <ion-item>
+        <ion-label position="stacked">Name <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input
+          type="text"
+          [value]="formData().name"
+          (ionInput)="updateFormField('name', $event.detail.value)"
+          placeholder="z.B. Fakturierung">
+        </ion-input>
+      </ion-item>
+
+      <!-- Code -->
+      <ion-item>
+        <ion-label position="stacked">Code <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input
+          type="text"
+          [value]="formData().code"
+          (ionInput)="updateFormField('code', $event.detail.value)"
+          placeholder="z.B. FIN-FAK"
+          [style.fontFamily]="'Courier New, monospace'">
+        </ion-input>
+        <ion-note slot="helper">Eindeutiger Code (z.B. ABT-BEREICH)</ion-note>
+      </ion-item>
+
+      <!-- Description -->
+      <ion-item>
+        <ion-label position="stacked">Beschreibung</ion-label>
+        <ion-textarea
+          [value]="formData().description"
+          (ionInput)="updateFormField('description', $event.detail.value)"
+          placeholder="Beschreibung des Fachbereichs"
+          rows="3">
+        </ion-textarea>
+      </ion-item>
+
+      <!-- Parent Specialty (Hierarchical) -->
+      <ion-item>
+        <ion-label position="stacked">Übergeordneter Fachbereich</ion-label>
+        <ion-select
+          [value]="formData().parent"
+          (ionChange)="updateFormField('parent', $event.detail.value)"
+          placeholder="Kein (Root-Ebene)"
+          interface="popover">
+          <ion-select-option [value]="null">Kein (Root-Ebene)</ion-select-option>
+          <ion-select-option *ngFor="let parent of parentSpecialties()" [value]="parent.id">
+            {{ parent.name }} ({{ parent.code }})
+          </ion-select-option>
+        </ion-select>
+        <ion-note slot="helper">Optional: Hierarchische Zuordnung</ion-note>
+      </ion-item>
+
+      <!-- Search Keywords -->
+      <ion-item>
+        <ion-label position="stacked">Such-Keywords</ion-label>
+        <ion-textarea
+          [value]="formData().search_keywords"
+          (ionInput)="updateFormField('search_keywords', $event.detail.value)"
+          placeholder="z.B. Rechnungsstellung, Faktura, Abrechnung"
+          rows="2">
+        </ion-textarea>
+        <ion-note slot="helper">Komma-getrennte Keywords für KI-Suche</ion-note>
+      </ion-item>
+
+      <!-- Display Order -->
+      <ion-item>
+        <ion-label position="stacked">Anzeigereihenfolge</ion-label>
+        <ion-input
+          type="number"
+          [value]="formData().display_order"
+          (ionInput)="updateFormField('display_order', $event.detail.value)"
+          placeholder="0">
+        </ion-input>
+        <ion-note slot="helper">Niedrigere Zahlen werden zuerst angezeigt</ion-note>
+      </ion-item>
+
+      <!-- Active Status -->
+      <ion-item>
+        <ion-label>Aktiv</ion-label>
+        <ion-toggle
+          [checked]="formData().is_active"
+          (ionChange)="updateFormField('is_active', $event.detail.checked)">
+        </ion-toggle>
+      </ion-item>
+    </ion-list>
+  </form>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="isSaving()" class="loading-overlay">
+    <ion-spinner></ion-spinner>
+    <p>Speichert...</p>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="clear" (click)="cancel()">Abbrechen</ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="solid" color="primary" (click)="save()" [disabled]="isSaving()">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        Speichern
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

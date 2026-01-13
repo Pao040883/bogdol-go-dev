@@ -1,0 +1,103 @@
+// ✅ ACCORDION STYLES (wie Blink Material)
+.status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.status-chip {
+  font-size: 0.8rem;
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+}
+
+.no-data {
+  color: var(--ion-color-medium);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+// ✅ EXPORT DETAILS STYLING
+.export-details {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+}
+
+// ✅ PERFORMANCE BADGE STYLES
+.performance-badge {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+// ✅ SUMMARY CARDS
+.summary-card {
+  margin-bottom: 16px;
+  
+  ion-card-content {
+    text-align: center;
+    
+    ion-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    h2 {
+      margin: 8px 0;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+    
+    p {
+      margin: 0;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+// ✅ LOADING CONTAINER
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+// ✅ EMPTY STATE
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  
+  ion-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    color: var(--ion-color-medium);
+  }
+  
+  h3 {
+    color: var(--ion-color-dark);
+    margin-bottom: 8px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 20px;
+  }
+}
+
+// ✅ HEADER CARD
+.header-card {
+  margin-bottom: 20px;
+  
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    ion-icon {
+      font-size: 1.5rem;
+    }
+  }
+}

@@ -1,0 +1,285 @@
+<div class="absence-detail">
+  <!-- Header -->
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/absences"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Abwesenheitsdetails</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="refreshData()">
+          <ion-icon name="refresh"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding">
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="loading-container">
+      <ion-spinner name="dots"></ion-spinner>
+      <p>Lade Abwesenheitsdetails...</p>
+    </div>
+
+    <!-- Error State -->
+    <ion-card *ngIf="error()" color="danger">
+      <ion-card-content>
+        <ion-icon name="alert-circle"></ion-icon>
+        {{ error() }}
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Absence Details -->
+    <div *ngIf="!isLoading() && absence()" class="absence-content">
+      
+      <!-- Main Info Card -->
+      <ion-card class="main-info-card">
+        <ion-card-header>
+          <ion-card-subtitle>
+            <ion-chip [color]="getStatusColor(absence()!.status)">
+              {{ getStatusLabel(absence()!.status) }}
+            </ion-chip>
+          </ion-card-subtitle>
+          <ion-card-title>
+            {{ absence()!.absence_type.display_name }}
+          </ion-card-title>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <!-- Date Range -->
+          <div class="info-row">
+            <ion-icon name="calendar"></ion-icon>
+            <div>
+              <div class="info-label">Zeitraum</div>
+              <div class="info-value">
+                {{ absence()!.start_date | date:'dd.MM.yyyy' }} - 
+                {{ absence()!.end_date | date:'dd.MM.yyyy' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Duration -->
+          <div class="info-row">
+            <ion-icon name="time"></ion-icon>
+            <div>
+              <div class="info-label">Dauer</div>
+              <div class="info-value">
+                {{ absence()!.duration_days }} {{ absence()!.duration_days === 1 ? 'Tag' : 'Tage' }}
+                <span *ngIf="absence()!.workday_duration" class="workdays">
+                  ({{ absence()!.workday_duration }} Arbeitstage)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employee -->
+          <div class="info-row">
+            <ion-icon name="person"></ion-icon>
+            <div>
+              <div class="info-label">Mitarbeiter</div>
+              <div class="info-value">
+                {{ absence()!.user.first_name }} {{ absence()!.user.last_name }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div class="info-row" *ngIf="absence()!.reason">
+            <ion-icon name="document-text"></ion-icon>
+            <div>
+              <div class="info-label">Begründung</div>
+              <div class="info-value">{{ absence()!.reason }}</div>
+            </div>
+          </div>
+
+          <!-- Representative -->
+          <div class="info-row" *ngIf="absence()!.representative">
+            <ion-icon name="people"></ion-icon>
+            <div>
+              <div class="info-label">Vertretung</div>
+              <div class="info-value">
+                {{ absence()!.representative!.first_name }} {{ absence()!.representative!.last_name }}
+                <ion-chip 
+                  [color]="absence()!.representative_confirmed ? 'success' : 'warning'" 
+                  size="small">
+                  {{ absence()!.representative_confirmed ? 'Bestätigt' : 'Ausstehend' }}
+                </ion-chip>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Workflow Status Card -->
+      <ion-card class="workflow-card" *ngIf="showWorkflowDetails()">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="git-branch"></ion-icon>
+            Workflow-Status
+          </ion-card-title>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <!-- Approval Information -->
+          <div class="workflow-step" *ngIf="absence()!.approved_by">
+            <div class="step-icon approved">
+              <ion-icon name="checkmark-circle"></ion-icon>
+            </div>
+            <div class="step-content">
+              <div class="step-title">Genehmigt</div>
+              <div class="step-info">
+                von {{ absence()!.approved_by!.first_name }} {{ absence()!.approved_by!.last_name }}
+                am {{ absence()!.approved_at | date:'dd.MM.yyyy HH:mm' }}
+              </div>
+              <div class="step-comment" *ngIf="absence()!.approval_comment">
+                "{{ absence()!.approval_comment }}"
+              </div>
+            </div>
+          </div>
+
+          <!-- HR Processing -->
+          <div class="workflow-step" *ngIf="absence()!.hr_processed">
+            <div class="step-icon hr-processed">
+              <ion-icon name="business"></ion-icon>
+            </div>
+            <div class="step-content">
+              <div class="step-title">HR Bearbeitung</div>
+              <div class="step-info">
+                von {{ absence()!.hr_processed_by!.first_name }} {{ absence()!.hr_processed_by!.last_name }}
+                am {{ absence()!.hr_processed_at | date:'dd.MM.yyyy HH:mm' }}
+              </div>
+              <div class="step-comment" *ngIf="absence()!.hr_comment">
+                "{{ absence()!.hr_comment }}"
+              </div>
+            </div>
+          </div>
+
+          <!-- Rejection Information -->
+          <div class="workflow-step" *ngIf="absence()!.rejected_by">
+            <div class="step-icon rejected">
+              <ion-icon name="close-circle"></ion-icon>
+            </div>
+            <div class="step-content">
+              <div class="step-title">Abgelehnt</div>
+              <div class="step-info">
+                von {{ absence()!.rejected_by!.first_name }} {{ absence()!.rejected_by!.last_name }}
+                am {{ absence()!.rejected_at | date:'dd.MM.yyyy HH:mm' }}
+              </div>
+              <div class="step-comment" *ngIf="absence()!.rejection_reason">
+                "{{ absence()!.rejection_reason }}"
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Action Buttons -->
+      <ion-card class="actions-card" *ngIf="showActionButtons()">
+        <ion-card-content>
+          <div class="action-buttons">
+            
+            <!-- Approve/Reject (for supervisors) -->
+            <div class="supervisor-actions" *ngIf="canApproveReject()">
+              <ion-button 
+                expand="block" 
+                color="success" 
+                (click)="approveAbsence()">
+                <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+                Genehmigen
+              </ion-button>
+              <ion-button 
+                expand="block" 
+                color="danger" 
+                fill="outline"
+                (click)="rejectAbsence()">
+                <ion-icon name="close-circle" slot="start"></ion-icon>
+                Ablehnen
+              </ion-button>
+            </div>
+
+            <!-- HR Actions -->
+            <div class="hr-actions" *ngIf="canProcessHR()">
+              <ion-button 
+                expand="block" 
+                color="tertiary" 
+                (click)="processHR()">
+                <ion-icon name="business" slot="start"></ion-icon>
+                HR Bearbeitung
+              </ion-button>
+            </div>
+
+            <!-- Revision (for owner) -->
+            <div class="owner-actions" *ngIf="canCreateRevision()">
+              <ion-button 
+                expand="block" 
+                color="warning" 
+                fill="outline"
+                (click)="createRevision()">
+                <ion-icon name="create" slot="start"></ion-icon>
+                Revision erstellen
+              </ion-button>
+            </div>
+
+            <!-- Cancel (for owner) -->
+            <div class="cancel-actions" *ngIf="canCancel()">
+              <ion-button 
+                expand="block" 
+                color="medium" 
+                fill="outline"
+                (click)="cancelAbsence()">
+                <ion-icon name="trash" slot="start"></ion-icon>
+                Stornieren
+              </ion-button>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Comments Section -->
+      <app-absence-comments 
+        [absenceId]="absence()!.id!" 
+        [comments]="commentsSignal">
+      </app-absence-comments>
+
+      <!-- Conflicts (if any) -->
+      <ion-card class="conflicts-card" *ngIf="absence()!.conflicts && absence()!.conflicts!.length > 0">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="warning"></ion-icon>
+            Konflikte
+          </ion-card-title>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <div *ngFor="let conflict of absence()!.conflicts" class="conflict-item">
+            <ion-chip [color]="getConflictSeverityColor(conflict.severity)">
+              {{ getConflictTypeLabel(conflict.conflict_type) }}
+            </ion-chip>
+            <p>{{ conflict.description }}</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Timestamps -->
+      <ion-card class="timestamps-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="information-circle"></ion-icon>
+            Zeitstempel
+          </ion-card-title>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <div class="timestamp-row">
+            <span>Erstellt:</span>
+            <span>{{ absence()!.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
+          </div>
+          <div class="timestamp-row">
+            <span>Letzte Änderung:</span>
+            <span>{{ absence()!.updated_at | date:'dd.MM.yyyy HH:mm' }}</span>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </ion-content>
+</div>

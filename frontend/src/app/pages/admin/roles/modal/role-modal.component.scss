@@ -1,0 +1,15 @@
+ion-list {
+  padding: 0;
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+ion-input,
+ion-textarea,
+ion-select {
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+}

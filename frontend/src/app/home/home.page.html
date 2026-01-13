@@ -1,0 +1,21 @@
+<ion-split-pane when="xl" contentId="main">
+  <ion-menu contentId="main">
+    <ion-header>
+      <ion-toolbar color="secondary">
+        <div class="go-logo-container">
+          <ion-img
+            [src]="'./assets/logos/logo-bogdol-go.svg'"
+            class="go-logo"
+          ></ion-img>
+        </div>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content color="secondary">
+      <app-navigation></app-navigation>
+    </ion-content>
+  </ion-menu>
+
+  <div class="ion-page" id="main">
+    <ion-router-outlet></ion-router-outlet>
+  </div>
+</ion-split-pane>

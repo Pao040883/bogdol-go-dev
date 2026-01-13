@@ -1,0 +1,450 @@
+.chart-container {
+  width: 100%;
+  height: calc(100vh - 120px);
+  min-height: 500px;
+  overflow: hidden;
+  background: #f5f7fa;
+  position: relative;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 80px;
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    margin: 8px 0;
+    color: var(--ion-color-medium);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    max-width: 400px;
+  }
+}
+
+// D3 Org Chart Node Styles
+::ng-deep .org-node {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+  }
+
+  &.company-node {
+    background: linear-gradient(
+      135deg,
+      var(--ion-color-primary) 0%,
+      var(--ion-color-primary-shade) 100%
+    );
+    border: none;
+    cursor: default;
+
+    .company-header {
+      padding: 16px 24px;
+      text-align: center;
+
+      .company-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  &.department-node {
+    background: white;
+    border: 2px solid #e2e8f0;
+    padding: 0;
+    min-width: 320px;
+
+    .dept-header {
+      background: linear-gradient(
+        135deg,
+        var(--ion-color-primary) 0%,
+        var(--ion-color-primary-shade) 100%
+      );
+      padding: 12px 16px;
+      text-align: center;
+
+      .dept-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+      }
+    }
+
+    .dept-leader {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      align-items: center;
+      background: #f8fafc;
+
+      &.empty-dept {
+        justify-content: center;
+        padding: 20px;
+        text-align: center;
+        flex-direction: column;
+        gap: 10px;
+
+        .empty-dept-icon {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: #e2e8f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          ion-icon {
+            font-size: 32px;
+            color: var(--ion-color-medium);
+          }
+        }
+
+        .leader-info {
+          .leader-title {
+            text-align: center;
+            margin-bottom: 0;
+          }
+        }
+      }
+
+      .leader-avatar {
+        flex-shrink: 0;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid var(--ion-color-primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .avatar-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+
+          ion-icon {
+            font-size: 32px;
+            color: var(--ion-color-medium);
+          }
+        }
+      }
+
+      .leader-info {
+        flex: 1;
+        min-width: 0;
+
+        .leader-name {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--ion-color-dark);
+          margin-bottom: 4px;
+
+          .inactive-marker {
+              font-size: 20px;
+              font-weight: 700;
+          }
+        }
+
+        .leader-title {
+          font-size: 13px;
+          color: var(--ion-color-primary);
+          font-weight: 600;
+          margin-bottom: 6px;
+        }
+
+        .leader-email {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: var(--ion-color-medium-shade);
+
+          ion-icon {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+  }
+
+  &.member-node {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    border: 2px solid #e2e8f0;
+    min-width: 280px;
+
+    .node-avatar {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+
+        ion-icon {
+          font-size: 28px;
+          color: var(--ion-color-medium);
+        }
+      }
+
+      .primary-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        width: 22px;
+        height: 22px;
+        background: var(--ion-color-warning);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: white;
+        border: 2px solid white;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .node-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .node-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+
+    .node-title {
+      font-size: 13px;
+      color: var(--ion-color-medium-shade);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+
+    .node-role-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      align-self: flex-start;
+
+      &.badge-danger {
+        background: var(--ion-color-danger);
+        color: white;
+      }
+
+      &.badge-warning {
+        background: var(--ion-color-warning);
+        color: white;
+      }
+
+      &.badge-primary {
+        background: var(--ion-color-primary);
+        color: white;
+      }
+
+      &.badge-success {
+        background: var(--ion-color-success);
+        color: white;
+      }
+
+      &.badge-medium {
+        background: var(--ion-color-medium);
+        color: white;
+      }
+    }
+
+    .node-email {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--ion-color-medium);
+
+      ion-icon {
+        font-size: 13px;
+      }
+    }
+
+    .node-specialties {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 6px;
+
+      .specialty-badge {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+
+        ion-icon {
+          font-size: 11px;
+        }
+
+        &.primary-specialty {
+          border: 2px solid rgba(255, 255, 255, 0.8);
+          font-weight: 700;
+        }
+
+        &.more {
+          background: var(--ion-color-light);
+          color: var(--ion-color-dark);
+          font-size: 9px;
+        }
+      }
+    }
+  }
+
+  &.staff-position {
+    border: 3px solid var(--ion-color-warning);
+    background: linear-gradient(135deg, #fffbf0 0%, #fff8e6 100%);
+    position: relative;
+    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.2);
+
+    .node-name {
+      color: var(--ion-color-warning-shade);
+    }
+
+    .staff-marker {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ion-color-warning);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(255, 152, 0, 0.3);
+      white-space: nowrap;
+      z-index: 10;
+
+      ion-icon {
+        font-size: 13px;
+      }
+    }
+
+    &:hover {
+      box-shadow: 0 6px 24px rgba(255, 152, 0, 0.3);
+    }
+  }
+}
+
+// D3 Org Chart SVG Styles
+::ng-deep .org-chart-svg {
+  width: 100%;
+  height: 100%;
+
+  .link {
+    fill: none;
+    stroke: #cbd5e0;
+    stroke-width: 2.5px;
+    opacity: 0.7;
+  }
+
+  .node {
+    cursor: pointer;
+  }
+}
+
+::ng-deep .svg-chart-container {
+  background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+}

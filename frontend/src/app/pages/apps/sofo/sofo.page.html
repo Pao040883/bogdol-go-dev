@@ -1,0 +1,616 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/apps"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Sofortmeldung</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openHRAssignmentModal()">
+        <ion-icon slot="icon-only" name="people"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-tabs #tabs>
+    <ion-tab tab="home">
+      <ion-list>
+        <ion-list-header>
+          <ion-label>
+            <h2>Meine Sofortmeldungen</h2>
+            <p>
+              Monat {{ currentMonthYear }} - Ältere Sofortmeldungen findest du
+              unter dem Tab Archiv
+            </p>
+          </ion-label>
+        </ion-list-header>
+
+        @for (meldung of sofortmeldungenAktuellerMonat(); track meldung.id) {
+        <ion-item button lines="full">
+          <ion-icon
+            slot="start"
+            [name]="meldung.status ? 'checkmark-circle' : 'close-circle'"
+            [color]="meldung.status ? 'success' : 'danger'"
+          >
+          </ion-icon>
+          {{ meldung.first_name }} {{ meldung.last_name }}
+        </ion-item>
+        } @empty {
+        <ion-item lines="full">
+          <ion-label>Keine Einträge vorhanden</ion-label>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-tab>
+    <ion-tab tab="radio">
+      <!-- <ion-list>
+        <ion-list-header>
+          <ion-label
+            ><h2>Sofortmeldung erstellen</h2>
+            <p>Mit und ohne Sozialversicherungsnummer</p></ion-label
+          >
+        </ion-list-header>
+        <ion-item lines="none">
+          <ion-checkbox
+            labelPlacement="end"
+            [checked]="svNumberAvailable"
+            (ionChange)="toggleSv()"
+            >Ich habe eine Sozialversicherungsnummer vorliegen</ion-checkbox
+          >
+        </ion-item>
+        @if(svNumberAvailable) {
+        <ion-item lines="full"
+          ><ion-input
+            label="Sozialversicherungsnummer"
+            labelPlacement="stacked"
+            placeholder="12345678A123"
+          ></ion-input>
+        </ion-item>
+        }
+        <ion-item lines="full"
+          ><ion-input
+            label="Vorname"
+            labelPlacement="stacked"
+            placeholder="Max"
+          ></ion-input>
+        </ion-item>
+        <ion-item lines="full"
+          ><ion-input
+            label="Nachname"
+            labelPlacement="stacked"
+            placeholder="Mustermann"
+          ></ion-input>
+        </ion-item>
+        @if(!svNumberAvailable) {
+
+        <ion-item lines="full">
+          <ion-input
+            id="open-modal"
+            aria-label="Staatsangehoerigkeit"
+            placeholder="Staatsangehörigkeit"
+            label="Staatsangehörigkeit"
+            labelPlacement="stacked"
+          ></ion-input>
+          <ion-modal #modal trigger="open-modal" (willDismiss)="closeModal()">
+            <ng-template>
+              <ion-content>
+                <ion-toolbar color="primary">
+                  <ion-title>Staatsangehörigkeiten</ion-title>
+                  <ion-buttons slot="end">
+                    <ion-button color="light" (click)="closeModal()"
+                      >Abbrechen</ion-button
+                    >
+                  </ion-buttons>
+                </ion-toolbar>
+                <ion-searchbar
+                  [debounce]="500"
+                  (ionInput)="handleInput($event)"
+                ></ion-searchbar>
+                <ion-list>
+                  @for(country of results; track country) {
+                  <ion-item>
+                    <ion-label>
+                      <h2>{{country.title}}</h2>
+                      <p>{{country.value}}</p>
+                    </ion-label>
+                  </ion-item>
+                  }
+                </ion-list>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        }
+        <ion-item lines="full">
+          <ion-label position="stacked">Vertragsbeginn</ion-label>
+          <ion-datetime-button
+            datetime="datetime"
+            class="date-button"
+          ></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true" #dateModal>
+            <ng-template>
+              <ion-datetime
+                id="datetime"
+                presentation="date"
+                locale="de-DE"
+                [showDefaultButtons]="true"
+                doneText="Okay"
+                cancelText="Abbrechen"
+                ><span slot="title">Vertragsbeginn</span>
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-item>
+          <ion-select
+            aria-label="Personengruppenschlüssel"
+            interface="popover"
+            placeholder="Personengruppenschlüssel"
+            label="Personengruppenschlüssel"
+            labelPlacement="stacked"
+          >
+            <ion-select-option value="101">101 - Brutto</ion-select-option>
+            <ion-select-option value="109">109 - Netto</ion-select-option>
+          </ion-select>
+        </ion-item>
+        @if(!svNumberAvailable) {
+
+        <ion-item-divider
+          ><ion-label color="primary"
+            >Geburtsinformationen</ion-label
+          ></ion-item-divider
+        >
+
+        <ion-item lines="full">
+          <ion-input
+            id="open-geburtsland"
+            aria-label="Geburtsland"
+            placeholder="Geburtsland"
+            label="Geburtsland"
+            labelPlacement="stacked"
+          ></ion-input>
+          <ion-modal #modalBirthland trigger="open-geburtsland">
+            <ng-template>
+              <ion-content>
+                <ion-toolbar color="primary">
+                  <ion-title>Geburtsland</ion-title>
+                  <ion-buttons slot="end">
+                    <ion-button color="light" (click)="modalBirthland.dismiss()"
+                      >Abbrechen</ion-button
+                    >
+                  </ion-buttons>
+                </ion-toolbar>
+                <ion-searchbar
+                  [debounce]="500"
+                  (ionInput)="handleInputBirthland($event)"
+                ></ion-searchbar>
+                <ion-list>
+                  @for(country of birthland; track country) {
+                  <ion-item>
+                    <ion-label>
+                      <h2>{{country.title}}</h2>
+                      <p>{{country.value}}</p>
+                    </ion-label>
+                  </ion-item>
+                  }
+                </ion-list>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-item>
+          <ion-select
+            aria-label="Geschlecht"
+            interface="popover"
+            placeholder="Geschlecht"
+            label="Geschlecht"
+            labelPlacement="stacked"
+          >
+            <ion-select-option value="m">Männlich</ion-select-option>
+            <ion-select-option value="w">Weiblich</ion-select-option>
+            <ion-select-option value="d">Divers</ion-select-option>
+            <ion-select-option value="x">Unbestimmt</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item lines="full"
+          ><ion-input
+            label="Geburtsname"
+            labelPlacement="stacked"
+            placeholder="Geburtsname"
+          ></ion-input>
+        </ion-item>
+        <ion-item lines="full">
+          <ion-label position="stacked">Geburtsdatum</ion-label>
+          <ion-datetime-button
+            datetime="datetime2"
+            class="date-button"
+          ></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true" #dateModal2>
+            <ng-template>
+              <ion-datetime
+                id="datetime2"
+                presentation="date"
+                locale="de-DE"
+                [showDefaultButtons]="true"
+                doneText="Okay"
+                cancelText="Abbrechen"
+                [value]="'1990-01-01'"
+                ><span slot="title">Geburtsdatum</span>
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+        <ion-item lines="full"
+          ><ion-input
+            label="Geburtsort"
+            labelPlacement="stacked"
+            placeholder="Geburtsort"
+          ></ion-input>
+        </ion-item>
+        <ion-item-divider
+          ><ion-label color="primary">Adresse</ion-label></ion-item-divider
+        >
+        <ion-item lines="full"
+          ><ion-input
+            label="Straße"
+            labelPlacement="stacked"
+            placeholder="Straße"
+          ></ion-input>
+        </ion-item>
+        <ion-item lines="full"
+          ><ion-input
+            label="Postleitzahl"
+            labelPlacement="stacked"
+            placeholder="Postleitzahl"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item lines="full"
+          ><ion-input
+            label="Wohnort"
+            labelPlacement="stacked"
+            placeholder="Wohnort"
+          ></ion-input>
+        </ion-item>
+        }
+      </ion-list> -->
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <ion-list>
+          <ion-list-header>
+            <ion-label>
+              <h2>Sofortmeldung erstellen</h2>
+              <p>Mit und ohne Sozialversicherungsnummer</p>
+            </ion-label>
+          </ion-list-header>
+
+          <ion-item lines="none">
+            <ion-checkbox
+              labelPlacement="end"
+              [checked]="svNumberAvailable()"
+              (ionChange)="toggleSv()"
+            >
+              Ich habe eine Sozialversicherungsnummer vorliegen
+            </ion-checkbox>
+          </ion-item>
+
+          @if (svNumberAvailable()) {
+          <ion-item lines="full">
+            <ion-input
+              formControlName="insurance_number"
+              label="Sozialversicherungsnummer"
+              labelPlacement="stacked"
+              placeholder="12345678A123"
+            ></ion-input>
+          </ion-item>
+          @if (form.get('insurance_number')?.invalid &&
+          form.get('insurance_number')?.touched) {
+          <ion-note color="danger"> Die SV-Nummer ist erforderlich. </ion-note>
+          } }
+
+          <ion-item lines="full">
+            <ion-input
+              formControlName="first_name"
+              label="Vorname"
+              labelPlacement="stacked"
+              placeholder="Max"
+            ></ion-input>
+          </ion-item>
+          @if (form.get('first_name')?.invalid &&
+          form.get('first_name')?.touched) {
+          <ion-note color="danger"> Vorname ist erforderlich. </ion-note>
+          }
+
+          <ion-item lines="full">
+            <ion-input
+              formControlName="last_name"
+              label="Nachname"
+              labelPlacement="stacked"
+              placeholder="Mustermann"
+            ></ion-input>
+          </ion-item>
+          @if (form.get('last_name')?.invalid && form.get('last_name')?.touched)
+          {
+          <ion-note color="danger"> Nachname ist erforderlich. </ion-note>
+          } @if (!svNumberAvailable()) {
+          <ion-item lines="full">
+            <ion-input
+              id="open-modal"
+              readonly
+              formControlName="citizenship"
+              aria-label="Staatsangehörigkeit"
+              placeholder="Staatsangehörigkeit"
+              label="Staatsangehörigkeit"
+              labelPlacement="stacked"
+            ></ion-input>
+            <ion-modal #modal trigger="open-modal" (willDismiss)="closeModal()">
+              <ng-template>
+                <ion-content>
+                  <ion-toolbar color="primary">
+                    <ion-title>Staatsangehörigkeiten</ion-title>
+                    <ion-buttons slot="end">
+                      <ion-button color="light" (click)="closeModal()"
+                        >Abbrechen</ion-button
+                      >
+                    </ion-buttons>
+                  </ion-toolbar>
+                  <ion-searchbar
+                    [debounce]="500"
+                    (ionInput)="handleInput($event)"
+                  ></ion-searchbar>
+                  <ion-list>
+                    @for (country of results; track country) {
+                    <ion-item button (click)="selectCountry(country)">
+                      <ion-label>
+                        <h2>{{ country.title }}</h2>
+                        <p>{{ country.value }}</p>
+                      </ion-label>
+                    </ion-item>
+                    }
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+          }
+
+          <ion-item lines="full">
+            <ion-label position="stacked">Vertragsbeginn</ion-label>
+            <ion-datetime-button
+              datetime="datetime"
+              class="date-button"
+            ></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true" #dateModal>
+              <ng-template>
+                <ion-datetime
+                  id="datetime"
+                  presentation="date"
+                  locale="de-DE"
+                  [showDefaultButtons]="true"
+                  doneText="Okay"
+                  cancelText="Abbrechen"
+                  [value]="form.get('start_date')?.value"
+                  (ionChange)="form.get('start_date')?.setValue($event.detail.value)"
+                >
+                  <span slot="title">Vertragsbeginn</span>
+                </ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              formControlName="group"
+              aria-label="Personengruppenschlüssel"
+              interface="popover"
+              placeholder="Personengruppenschlüssel"
+              label="Personengruppenschlüssel"
+              labelPlacement="stacked"
+            >
+              <ion-select-option value="101">101 - Brutto</ion-select-option>
+              <ion-select-option value="109">109 - Netto</ion-select-option>
+            </ion-select>
+          </ion-item>
+          @if (form.get('group')?.invalid && form.get('group')?.touched) {
+          <ion-note color="danger">
+            Personengruppenschlüssel ist erforderlich.
+          </ion-note>
+          } @if (!svNumberAvailable()) {
+          <ion-item-divider>
+            <ion-label color="primary">Geburtsinformationen</ion-label>
+          </ion-item-divider>
+
+          <ion-item lines="full">
+            <ion-input
+              id="open-geburtsland"
+              readonly
+              formControlName="birth_land"
+              aria-label="Geburtsland"
+              placeholder="Geburtsland"
+              label="Geburtsland"
+              labelPlacement="stacked"
+            ></ion-input>
+            <ion-modal #modalBirthland trigger="open-geburtsland">
+              <ng-template>
+                <ion-content>
+                  <ion-toolbar color="primary">
+                    <ion-title>Geburtsland</ion-title>
+                    <ion-buttons slot="end">
+                      <ion-button
+                        color="light"
+                        (click)="modalBirthland.dismiss()"
+                        >Abbrechen</ion-button
+                      >
+                    </ion-buttons>
+                  </ion-toolbar>
+                  <ion-searchbar
+                    [debounce]="500"
+                    (ionInput)="handleInputBirthland($event)"
+                  ></ion-searchbar>
+                  <ion-list>
+                    @for (country of birthland; track country) {
+                    <ion-item button (click)="selectbirthCountry(country)">
+                      <ion-label>
+                        <h2>{{ country.title }}</h2>
+                        <p>{{ country.value }}</p>
+                      </ion-label>
+                    </ion-item>
+                    }
+                  </ion-list>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              formControlName="birth_gender"
+              aria-label="Geschlecht"
+              interface="popover"
+              placeholder="Geschlecht"
+              label="Geschlecht"
+              labelPlacement="stacked"
+            >
+              <ion-select-option value="m">Männlich</ion-select-option>
+              <ion-select-option value="w">Weiblich</ion-select-option>
+              <ion-select-option value="d">Divers</ion-select-option>
+              <ion-select-option value="x">Unbestimmt</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="full">
+            <ion-input
+              formControlName="birth_name"
+              label="Geburtsname"
+              labelPlacement="stacked"
+              placeholder="Geburtsname"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item lines="full">
+            <ion-label position="stacked">Geburtsdatum</ion-label>
+            <ion-datetime-button
+              datetime="datetime2"
+              class="date-button"
+            ></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true" #dateModal2>
+              <ng-template>
+                <ion-datetime
+                  id="datetime2"
+                  presentation="date"
+                  locale="de-DE"
+                  [showDefaultButtons]="true"
+                  doneText="Okay"
+                  cancelText="Abbrechen"
+                  [value]="'1990-01-01'"
+                  [value]="form.get('birth_date')?.value"
+                  (ionChange)="form.get('birth_date')?.setValue($event.detail.value)"
+                >
+                  <span slot="title">Geburtsdatum</span>
+                </ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+
+          <ion-item lines="full">
+            <ion-input
+              formControlName="birth_place"
+              label="Geburtsort"
+              labelPlacement="stacked"
+              placeholder="Geburtsort"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item-divider>
+            <ion-label color="primary">Adresse</ion-label>
+          </ion-item-divider>
+
+          <ion-item lines="full">
+            <ion-input
+              formControlName="street_name"
+              label="Straße"
+              labelPlacement="stacked"
+              placeholder="Straße"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item lines="full">
+            <ion-input
+              formControlName="zip_code"
+              label="Postleitzahl"
+              labelPlacement="stacked"
+              placeholder="Postleitzahl"
+            ></ion-input>
+          </ion-item>
+          @if (form.get('zip_code')?.errors?.['required'] &&
+          form.get('postalCode')?.touched) {
+          <ion-note color="danger">Postleitzahl ist erforderlich.</ion-note>
+          } @if (form.get('zip_code')?.errors?.['pattern'] &&
+          form.get('zip_code')?.touched) {
+          <ion-note color="danger"
+            >Die Postleitzahl muss 5 Ziffern enthalten.</ion-note
+          >
+          }
+
+          <ion-item lines="full">
+            <ion-input
+              formControlName="city_name"
+              label="Wohnort"
+              labelPlacement="stacked"
+              placeholder="Wohnort"
+            ></ion-input>
+          </ion-item>
+          @if (form.get('city_name')?.errors?.['required'] &&
+          form.get('city_name')?.touched) {
+          <ion-note color="danger">Stadt ist erforderlich.</ion-note>
+          } }
+
+          <ion-button expand="block" type="submit" [disabled]="form.invalid"
+            >Absenden</ion-button
+          >
+        </ion-list>
+      </form>
+    </ion-tab>
+
+    <ion-tab tab="archive">
+      <ion-list>
+        <ion-list-header>
+          <ion-label
+            ><h2>Sofortmeldungen</h2>
+            <p>Archiv - älter als ein Monat</p></ion-label
+          >
+        </ion-list-header>
+        @for (meldung of sofortmeldungenArichiv(); track meldung.id) {
+        <ion-item button lines="full">
+          <ion-icon
+            slot="start"
+            [name]="meldung.status ? 'checkmark-circle' : 'close-circle'"
+            [color]="meldung.status ? 'success' : 'danger'"
+          >
+          </ion-icon>
+          {{ meldung.first_name }} {{ meldung.last_name }}
+        </ion-item>
+        } @empty {
+        <ion-item lines="full">
+          <ion-label>Keine Einträge vorhanden</ion-label>
+        </ion-item>
+        }
+      </ion-list>
+    </ion-tab>
+
+    <ion-tab-bar slot="bottom" color="primary" class="ion-align-items-center">
+      <ion-tab-button tab="home">
+        <ion-icon name="list"></ion-icon>
+        Sofortmeldungen
+      </ion-tab-button>
+      <ion-tab-button tab="radio">
+        <ion-icon name="add"></ion-icon>
+        Neu
+      </ion-tab-button>
+      <ion-tab-button tab="archive">
+        <ion-icon name="archive"></ion-icon>
+        Archiv
+      </ion-tab-button>
+    </ion-tab-bar>
+  </ion-tabs>
+</ion-content>

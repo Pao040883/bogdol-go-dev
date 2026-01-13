@@ -1,0 +1,104 @@
+<ion-modal [isOpen]="isOpen" (didDismiss)="closeModal()">
+  <ng-template>
+    <div class="ion-page">
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>{{ editingAbsence ? 'Abwesenheit bearbeiten' : 'Neue Abwesenheit' }}</ion-title>
+          <ion-button fill="clear" slot="end" (click)="closeModal()">
+            <ion-icon name="close" color="light"></ion-icon>
+          </ion-button>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <form [formGroup]="createForm">
+          <!-- Zeitraum -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="calendar-outline"></ion-icon>
+                Zeitraum
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="full">
+                <ion-label position="stacked">Von</ion-label>
+                <input type="date" formControlName="start_date" />
+              </ion-item>
+
+              <ion-item lines="full">
+                <ion-label position="stacked">Bis</ion-label>
+                <input type="date" formControlName="end_date" />
+              </ion-item>
+
+              <div class="working-days-info">
+                <ion-icon name="time-outline" color="primary"></ion-icon>
+                <span><strong>{{ workingDays() }}</strong> Arbeitstage</span>
+              </div>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Details -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="document-text-outline"></ion-icon>
+                Details
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item lines="full">
+                <ion-label position="stacked">Abwesenheitstyp</ion-label>
+                <ion-select formControlName="absence_type_id" interface="popover">
+                  @for (type of absenceTypes(); track type.id) {
+                    <ion-select-option [value]="type.id">{{ type.display_name }}</ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+              
+              <ion-item lines="full">
+                <ion-label position="stacked">Vertretung (optional)</ion-label>
+                <ion-select formControlName="representative_id" interface="popover" placeholder="Wähle eine Vertretung aus...">
+                  <ion-select-option [value]="null">Keine Vertretung</ion-select-option>
+                  @for (contact of availableRepresentatives(); track contact.user_id) {
+                    <ion-select-option [value]="contact.user_id">
+                      {{ (contact.first_name + ' ' + contact.last_name).trim() || contact.username }}
+                    </ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+
+              <ion-item lines="none">
+                <ion-label position="stacked">Grund (optional)</ion-label>
+                <ion-textarea 
+                  formControlName="reason" 
+                  rows="3"
+                  placeholder="Optionaler Kommentar..."></ion-textarea>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </form>
+      </ion-content>
+
+      <ion-footer>
+        <ion-toolbar>
+          <ion-button
+            expand="block"
+            (click)="submit()"
+            [disabled]="!createForm.valid || isSubmitting()"
+            color="primary"
+            size="large">
+            @if (!isSubmitting()) {
+              <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+              <span>{{ editingAbsence ? 'Änderungen speichern' : 'Abwesenheit erstellen' }}</span>
+            }
+            @if (isSubmitting()) {
+              <ion-spinner name="crescent"></ion-spinner>
+              <span>Wird erstellt...</span>
+            }
+          </ion-button>
+        </ion-toolbar>
+      </ion-footer>
+    </div>
+  </ng-template>
+</ion-modal>

@@ -1,0 +1,288 @@
+::ng-deep {
+  app-presence {
+    ion-content {
+      --background: #f9f9f9;
+    }
+
+    .presence-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+
+    // ========================================================================
+    // STATUS SELECTOR
+    // ========================================================================
+
+    .status-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #1f2937;
+      }
+
+      .status-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+
+        ion-button {
+          --border-radius: 8px;
+          --padding-start: 0.75rem;
+          --padding-end: 0.75rem;
+          text-transform: none;
+          font-size: 0.875rem;
+
+          &.online {
+            --background: #10b981;
+
+            &.active {
+              --background: #059669;
+            }
+          }
+
+          &.away {
+            --background: #f59e0b;
+
+            &.active {
+              --background: #d97706;
+            }
+          }
+
+          &.busy {
+            --background: #ef4444;
+
+            &.active {
+              --background: #dc2626;
+            }
+          }
+
+          &.offline {
+            --background: #6b7280;
+
+            &.active {
+              --background: #4b5563;
+            }
+          }
+        }
+      }
+
+      .current-status {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #f3f4f6;
+        border-radius: 8px;
+
+        .status-icon {
+          font-size: 1.5rem;
+        }
+
+        .status-info {
+          flex: 1;
+
+          .status-label {
+            font-size: 0.875rem;
+            color: #666;
+            margin: 0;
+          }
+
+          .status-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+            text-transform: capitalize;
+          }
+        }
+      }
+
+      .status-message-input {
+        margin-top: 1rem;
+
+        ion-input {
+          --padding-start: 1rem;
+          --padding-end: 1rem;
+          --padding-top: 0.75rem;
+          --padding-bottom: 0.75rem;
+          background: #f9f9f9;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 0.875rem;
+
+          &::placeholder {
+            color: #999;
+          }
+        }
+      }
+    }
+
+    // ========================================================================
+    // ONLINE USERS
+    // ========================================================================
+
+    .online-users-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .section-title {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #1f2937;
+          margin: 0;
+        }
+
+        .online-count {
+          background: #10b981;
+          color: white;
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.875rem;
+          font-weight: 600;
+        }
+      }
+
+      .online-users-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .user-item {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 0.75rem;
+          background: #f9f9f9;
+          border-radius: 8px;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #f3f4f6;
+          }
+
+          .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+          }
+
+          .user-info {
+            flex: 1;
+
+            .user-name {
+              font-size: 0.95rem;
+              font-weight: 600;
+              color: #1f2937;
+              margin: 0;
+            }
+
+            .user-status {
+              font-size: 0.8rem;
+              color: #666;
+              margin: 0.25rem 0 0;
+
+              .status-icon {
+                margin-right: 0.25rem;
+              }
+            }
+          }
+
+          .last-seen {
+            font-size: 0.75rem;
+            color: #999;
+            text-align: right;
+          }
+        }
+      }
+
+      .no-users {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: #999;
+        font-size: 0.875rem;
+
+        p {
+          margin: 0;
+        }
+      }
+    }
+
+    // ========================================================================
+    // CONNECTION STATUS
+    // ========================================================================
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+
+      &.connected {
+        background: #d1fae5;
+        color: #065f46;
+
+        .status-dot {
+          background: #10b981;
+          animation: pulse 2s infinite;
+        }
+      }
+
+      &.disconnected {
+        background: #fee2e2;
+        color: #991b1b;
+
+        .status-dot {
+          background: #ef4444;
+        }
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .status-text {
+        margin: 0;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

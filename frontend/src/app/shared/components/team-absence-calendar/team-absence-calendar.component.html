@@ -1,0 +1,132 @@
+<ion-card class="team-calendar-card">
+  <ion-card-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button fill="clear" (click)="previousMonth()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+
+      <ion-title>{{ currentMonthName() }}</ion-title>
+
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="goToToday()">Heute</ion-button>
+        <ion-button fill="clear" (click)="nextMonth()">
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-card-header>
+
+  <ion-card-content class="calendar-content">
+    @if (showFilters) {
+      <div class="filter-section">
+        <ion-chip>
+          <ion-icon name="people-outline"></ion-icon>
+          <ion-label>{{ filteredTeamMembers().length }} Mitarbeiter</ion-label>
+        </ion-chip>
+
+        @if (availableDepartments().length > 0) {
+          <div class="dept-select">
+            <ion-select 
+              placeholder="Alle Abteilungen" 
+              interface="popover" 
+              [value]="selectedDepartment()" 
+              (ionChange)="selectedDepartment.set($event.detail.value)">
+              <ion-select-option [value]="null">Alle Abteilungen</ion-select-option>
+              @for (dept of availableDepartments(); track dept) {
+                <ion-select-option [value]="dept">{{ dept }}</ion-select-option>
+              }
+            </ion-select>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="team-calendar-grid">
+      <div class="calendar-header">
+        <div class="employee-column-header">Mitarbeiter</div>
+        <div class="days-grid">
+          @for (day of calendarDays(); track day.date) {
+            <div class="day-header" 
+                 [class.weekend]="day.isWeekend" 
+                 [class.today]="day.isToday"
+                 [class.public-holiday]="day.isPublicHoliday"
+                 [title]="day.isPublicHoliday ? day.holidayName : ''">
+              <div class="day-name">{{ getDayName(day.date) }}</div>
+              <div class="day-number">{{ day.dayNumber }}</div>
+              @if (day.isPublicHoliday) {
+                <div class="holiday-tooltip">{{ day.holidayName }}</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="employee-rows">
+        @for (employee of filteredTeamMembers(); track employee.id) {
+          <div class="employee-row">
+            <div class="employee-info">
+              <div class="employee-avatar">{{ getInitials(employee) }}</div>
+              <div class="employee-details">
+                <div class="employee-name">{{ employee.first_name }} {{ employee.last_name }}</div>
+                @if (employee.department) {
+                  <div class="employee-dept">{{ employee.department }}</div>
+                }
+              </div>
+              @if (hasAbsenceInMonth(employee.id)) {
+                <ion-badge color="warning">{{ getAbsenceCount(employee.id) }}</ion-badge>
+              }
+            </div>
+
+            <div class="days-grid">
+              @for (day of calendarDays(); track day.date) {
+                <div class="day-cell"
+                     [class.weekend]="day.isWeekend"
+                     [class.today]="day.isToday"
+                     [class.public-holiday]="day.isPublicHoliday"
+                     [class.has-absence]="hasAbsenceOnDate(employee.id, day.date)"
+                     [class.has-holiday-icon]="day.isPublicHoliday"
+                     [style.border-left-color]="day.isPublicHoliday && hasAbsenceOnDate(employee.id, day.date) ? getTypeColor(getAbsenceForDate(employee.id, day.date)?.absence_type) : null"
+                     [attr.title]="day.isPublicHoliday ? day.holidayName : getAbsenceTooltip(employee.id, day.date)"
+                     (click)="onCellClick(employee, day.date)">
+                  @if (day.isPublicHoliday && !hasAbsenceOnDate(employee.id, day.date)) {
+                    <!-- Feiertags-Icon für alle Mitarbeiter -->
+                    <ion-icon 
+                      name="ribbon-outline"
+                      color="medium"
+                      class="holiday-icon">
+                    </ion-icon>
+                  }
+                  @if (hasAbsenceOnDate(employee.id, day.date)) {
+                    <!-- Abwesenheits-Icon -->
+                    <ion-icon 
+                      [name]="getAbsenceIcon(getAbsenceForDate(employee.id, day.date))"
+                      [color]="getAbsenceIconColor(getAbsenceForDate(employee.id, day.date))">
+                    </ion-icon>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="calendar-legend">
+        <div class="legend-title">Legende:</div>
+        <div class="legend-items">
+          @for (type of absenceService.absenceTypes(); track type.id) {
+            <div class="legend-item">
+              <div class="legend-color" [style.background-color]="getTypeColor(type)"></div>
+              <div class="legend-label">{{ type.display_name }}</div>
+            </div>
+          }
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: rgba(255, 193, 7, 0.5);"></div>
+            <div class="legend-label">Ausstehend</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ion-card-content>
+</ion-card>
