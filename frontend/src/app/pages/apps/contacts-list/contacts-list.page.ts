@@ -437,11 +437,11 @@ export class ContactsListPage implements OnInit, OnDestroy {
     const substitution = this.data().find((person) => person.id === id);
     if (!substitution) return;
 
-    this.searchbar.value = substitution.first_name;
-    const query = substitution.first_name.toLowerCase();
-    this.results.set(
-      this.data().filter((d) => d.first_name.toLowerCase().includes(query))
-    );
+    const fullName = `${substitution.first_name} ${substitution.last_name}`;
+    this.searchbar.value = fullName;
+    
+    // Trigger die normale Suchlogik
+    this.handleInput({ target: this.searchbar } as any);
 
     // Accordion schließen
     this.expandedAccordion = null;

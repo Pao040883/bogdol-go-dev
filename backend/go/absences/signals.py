@@ -198,8 +198,8 @@ def handle_absence_chat_integration(sender, instance, created, **kwargs):
         
         # Vorgesetzten ermitteln (oder Fallback zu Admin/HR)
         supervisor = None
-        if hasattr(instance.user, 'userprofile') and instance.user.userprofile.direct_supervisor:
-            supervisor = instance.user.userprofile.direct_supervisor
+        if hasattr(instance.user, 'profile') and instance.user.profile.direct_supervisor:
+            supervisor = instance.user.profile.direct_supervisor
             logger.info(f"Absence {instance.id}: Vorgesetzter gefunden: {supervisor.username}")
         else:
             supervisor = get_first_admin_or_hr()

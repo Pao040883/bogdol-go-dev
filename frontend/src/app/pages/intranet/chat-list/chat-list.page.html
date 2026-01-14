@@ -9,7 +9,7 @@
 
 <ion-content [fullscreen]="true">
   <!-- Status Section -->
-  <ion-card>
+  <!-- <ion-card>
     <ion-card-header>
       <ion-card-title>Mein Status</ion-card-title>
     </ion-card-header>
@@ -34,7 +34,7 @@
         </ion-input>
       </ion-item>
     </ion-card-content>
-  </ion-card>
+  </ion-card> -->
 
   <!-- All Users (Online & Offline) -->
   <ion-card>
@@ -55,7 +55,7 @@
           </ion-item>
           <ion-list slot="content">
             @for (user of onlineUsers; track user.username) {
-              <ion-item>
+              <ion-item button (click)="startChatWithUser(user.username)">
                 <ion-icon 
                   [name]="getStatusIcon(user.status)" 
                   [color]="getStatusColor(user.status)"
@@ -65,7 +65,7 @@
                   <h3>{{ user.full_name }}</h3>
                   <p>{{ user.status_message || user.status }}</p>
                 </ion-label>
-                <ion-button fill="clear" slot="end" (click)="startChatWithUser(user.username)">
+                <ion-button fill="clear" slot="end">
                   <ion-icon name="chatbubble-outline"></ion-icon>
                 </ion-button>
               </ion-item>
@@ -87,7 +87,7 @@
           </ion-item>
           <ion-list slot="content">
             @for (user of offlineUsers; track user.username) {
-              <ion-item>
+              <ion-item button (click)="startChatWithUser(user.username)">
                 <ion-icon 
                   name="ellipse-outline"
                   color="medium"
@@ -97,7 +97,7 @@
                   <h3>{{ user.full_name }}</h3>
                   <p class="text-muted">Offline</p>
                 </ion-label>
-                <ion-button fill="clear" slot="end" (click)="startChatWithUser(user.username)">
+                <ion-button fill="clear" slot="end">
                   <ion-icon name="chatbubble-outline"></ion-icon>
                 </ion-button>
               </ion-item>
